@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import avatar from '@/assets/personal.svg'
-const count = ref<number>(0)
 
+const count = 0
 </script>
 
 <template>
@@ -10,7 +9,7 @@ const count = ref<number>(0)
     <div class="header-container">
       <img :src="avatar" class="icon" />
       <span class="title"> 我的简历 </span>
-      <el-tag type="success" effect="dark" round>{{ count }}</el-tag>
+      <el-tag effect="dark" round>{{ count }}</el-tag>
     </div>
     <el-divider class="custom-divider" />
   </div>
@@ -27,7 +26,7 @@ const count = ref<number>(0)
     width: 24px;
     height: 24px;
     margin-right: 8px;
-    color: #00A854;
+    color: #0685ca;
   }
 
   .title {
@@ -42,6 +41,9 @@ const count = ref<number>(0)
     height: 22px;
     line-height: 22px;
     padding: 0 8px;
+    background-color: #0685ca;
+    border-color: #0685ca;
+    color: #fff;
   }
 }
 

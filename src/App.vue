@@ -6,6 +6,4 @@ import Index from './components/Index.vue'
   <Index />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
