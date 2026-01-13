@@ -26,7 +26,7 @@ const count = 0
     width: 24px;
     height: 24px;
     margin-right: 8px;
-    color: #0685ca;
+    color: var(--el-color-primary);
   }
 
   .title {
@@ -41,8 +41,8 @@ const count = 0
     height: 22px;
     line-height: 22px;
     padding: 0 8px;
-    background-color: #0685ca;
-    border-color: #0685ca;
+    background-color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
     color: #fff;
   }
 }

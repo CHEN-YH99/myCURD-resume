@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Download, Document, Edit, View } from '@element-plus/icons-vue'
+import { ArrowLeft, Download, Document } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 
 type Mode = 'edit' | 'preview' | 'both'
@@ -71,21 +71,11 @@ const onExport = () => emit('export')
         ]"
       />
 
-      <div class="mode-icons">
-        <span class="mode-icon" :class="{ active: segmentValue === 'edit' || segmentValue === 'both' }">
-          <el-icon><Edit /></el-icon>
-          <span>仅编辑</span>
-        </span>
-        <span class="mode-icon" :class="{ active: segmentValue === 'preview' || segmentValue === 'both' }">
-          <el-icon><View /></el-icon>
-          <span>仅预览</span>
-        </span>
-      </div>
     </div>
 
     <div class="right">
-      <el-button type="success" round :icon="Document" @click="onSave">保存</el-button>
-      <el-button type="success" round :icon="Download" @click="onExport">导出</el-button>
+      <el-button type="primary" round :icon="Document" @click="onSave">保存</el-button>
+      <el-button type="primary" round :icon="Download" @click="onExport">导出</el-button>
     </div>
   </header>
 </template>

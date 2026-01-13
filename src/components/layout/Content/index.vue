@@ -35,8 +35,6 @@ const primaryHoverColor = computed(() => '#0a91d9')
 </template>
 
 <style lang="scss" scoped>
-$theme-color: #0685ca;
-$theme-color-light: rgba(6, 133, 202, 0.08);
 $gradient-start: #f8faff;
 $gradient-end: #f2f6fc;
 
@@ -85,7 +83,7 @@ $gradient-end: #f2f6fc;
 .icon-background {
   width: 88px;
   height: 88px;
-  background-color: $theme-color-light;
+  background-color: var(--el-color-primary-light-9);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -123,8 +121,8 @@ p {
 }
 
 :deep(.el-button--primary) {
-  background-color: $theme-color;
-  border-color: $theme-color;
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 
   &:hover {
     background-color: v-bind(primaryHoverColor);
@@ -133,8 +131,8 @@ p {
 }
 
 :deep(.el-button.is-plain) {
-  --el-button-hover-text-color: #{$theme-color};
-  --el-button-hover-border-color: #{rgba($theme-color, 0.5)};
-  --el-button-hover-bg-color: #{rgba($theme-color, 0.05)};
+  --el-button-hover-text-color: var(--el-color-primary);
+  --el-button-hover-border-color: var(--el-color-primary-light-3);
+  --el-button-hover-bg-color: var(--el-color-primary-light-9);
 }
 </style>

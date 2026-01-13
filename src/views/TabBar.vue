@@ -50,8 +50,8 @@ import { ArrowLeft, Download, Edit, EditPen, Finished, Menu, View } from '@eleme
     }
 
     .el-tag {
-      background-color: #0685ca;
-      border-color: #0685ca;
+      background-color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
     }
   }
 
@@ -65,12 +65,12 @@ import { ArrowLeft, Download, Edit, EditPen, Finished, Menu, View } from '@eleme
     }
 
     .el-button--primary {
-      background-color: #0685ca;
-      border-color: #0685ca;
+      background-color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
 
       &:hover {
-        background-color: #38a5e0; // 新的悬停颜色
-        border-color: #38a5e0;
+        background-color: var(--el-color-primary-light-3);
+        border-color: var(--el-color-primary-light-3);
       }
     }
   }
