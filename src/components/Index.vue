@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import { ref } from 'vue'
-import Head from '@/components/layout/Head/index.vue'
-import Content from '@/components/layout/Content/index.vue'
+import Head from '@/components/layout/head/index.vue'
+import Content from '@/components/layout/content/index.vue'
 </script>
 
 <template>

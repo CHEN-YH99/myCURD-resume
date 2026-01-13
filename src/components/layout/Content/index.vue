@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { Plus, Upload, View } from '@element-plus/icons-vue'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import resumeIcon from '@/assets/resume.svg'
 
+const router = useRouter()
+
 const createResume = () => {
-  void 0
+  router.push('/editor')
 }
 
 const primaryHoverColor = computed(() => '#0a91d9')
