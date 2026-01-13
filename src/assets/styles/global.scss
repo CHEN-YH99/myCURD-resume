@@ -1,6 +1,5 @@
 // 主题色
 $theme-color: #0685ca;
-$theme-color-light: rgba(6, 133, 202, 0.08);
 $theme-color-hover: #38a5e0;
 
 // 文字色
@@ -25,70 +24,13 @@ $warning: #e6a23c;
 $danger: #f56c6c;
 $info: #909399;
 
-// 阴影
-$box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-$box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.05);
-
 // 圆角
 $border-radius-base: 4px;
-$border-radius-round: 20px;
-$border-radius-circle: 50%;
 
 // 动画
 $transition-base: all 0.2s ease-in-out;
-$transition-fade: opacity 0.3s ease;
 
-// 布局
-$header-height: 56px;
-$sidebar-width: 240px;
-$content-padding: 20px;
-
-// 滚动条样式
-@mixin scrollbar($width: 6px, $height: 6px) {
-  &::-webkit-scrollbar {
-    width: $width;
-    height: $height;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-    transition: $transition-base;
-
-    &:hover {
-      background: #a8a8a8;
-    }
-  }
-}
-
-// 文本溢出省略
-@mixin text-ellipsis($line: 1) {
-  @if $line == 1 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  } @else {
-    display: -webkit-box;
-    -webkit-line-clamp: $line;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
-// 清除浮动
-@mixin clearfix {
-  &::after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-}
-
-// 重置 Element Plus 主题色
+// Element Plus 主题色（唯一主题源）
 :root {
   --el-color-primary: #{$theme-color};
   --el-color-primary-light-3: #{lighten($theme-color, 10%)};
@@ -99,53 +41,57 @@ $content-padding: 20px;
   --el-color-primary-dark-2: #{darken($theme-color, 10%)};
 }
 
-// 全局按钮样式覆盖
+// 全局滚动行为：页面不滚动，使用容器滚动
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+// 统一细滚动条（替换浏览器默认）
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+// Element Plus：按钮/标签统一圆角与主题
 .el-button {
   border-radius: $border-radius-base;
-  
-  &--primary {
-    background-color: $theme-color;
-    border-color: $theme-color;
-    
-    &:hover, &:focus {
-      background-color: $theme-color-hover;
-      border-color: $theme-color-hover;
-    }
-  }
-  
-  &--success {
-    background-color: $success;
-    border-color: $success;
-  }
 }
 
-// 全局标签样式
-.el-tag {
-  &--success {
-    background-color: $theme-color;
-    border-color: $theme-color;
-    color: #fff;
-  }
+.el-button--primary {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
 }
 
-// 全局布局样式
-.page-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
 }
 
-.page-header {
-  padding: 16px 24px;
-  background: #fff;
-  border-bottom: 1px solid $border-color-light;
-}
-
-.page-content {
-  flex: 1;
-  padding: $content-padding;
-  overflow: auto;
-  @include scrollbar;
+.el-tag--success {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: #fff;
 }
 
 // 工具类
@@ -153,31 +99,10 @@ $content-padding: 20px;
   text-align: center;
 }
 
-.text-right {
-  text-align: right;
-}
-
-.mt-16 {
-  margin-top: 16px;
-}
-
-.mb-16 {
-  margin-bottom: 16px;
-}
-
-.ml-8 {
-  margin-left: 8px;
-}
-
-.mr-8 {
-  margin-right: 8px;
-}
-
 .pointer {
   cursor: pointer;
 }
 
-// 响应式
 @media (max-width: 768px) {
   .hidden-mobile {
     display: none !important;

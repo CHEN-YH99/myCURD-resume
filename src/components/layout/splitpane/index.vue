@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(
   defineProps<{
+    /** 左侧初始宽度（百分比） */
     leftWidth?: number
+    /** 左侧最小宽度（百分比） */
     minLeftWidth?: number
+    /** 左侧最大宽度（百分比） */
     maxLeftWidth?: number
+    /** 右侧最小宽度（百分比） */
+    minRightWidth?: number
+    /** 是否禁用拖拽 */
     disabled?: boolean
   }>(),
   {
     leftWidth: 50,
     minLeftWidth: 20,
     maxLeftWidth: 80,
+    minRightWidth: 20,
     disabled: false
   }
 )
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const emit = defineEmits<{
   resize: [leftWidth: number, rightWidth: number]
 }>()
@@ -30,6 +35,30 @@ const startX = ref(0)
 const startY = ref(0)
 const startLeftWidth = ref(0)
 const isMobile = ref(false)
+
+const clampLeftWidth = (value: number) => {
+  const minLeft = props.minLeftWidth
+  const maxLeft = props.maxLeftWidth
+  const minRight = props.minRightWidth
+
+  const effectiveMinLeft = Math.max(minLeft, 0)
+  const effectiveMaxLeft = Math.min(maxLeft, 100)
+
+  let v = Math.max(effectiveMinLeft, Math.min(effectiveMaxLeft, value))
+
+  // 右侧最小值限制：left <= 100 - minRight
+  const maxLeftByRight = 100 - minRight
+  v = Math.min(v, maxLeftByRight)
+
+  return v
+}
+
+watch(
+  () => props.leftWidth,
+  (v) => {
+    leftWidthPercent.value = clampLeftWidth(v)
+  }
+)
 
 const leftWidthStyle = computed(() => {
   if (isMobile.value) {
@@ -81,12 +110,7 @@ const handleMouseMove = (e: MouseEvent) => {
   }
 
   let newLeftWidth = startLeftWidth.value + deltaPercent
-
-  // 限制在最小和最大宽度之间
-  newLeftWidth = Math.max(
-    props.minLeftWidth,
-    Math.min(props.maxLeftWidth, newLeftWidth)
-  )
+  newLeftWidth = clampLeftWidth(newLeftWidth)
 
   leftWidthPercent.value = newLeftWidth
 
@@ -104,13 +128,13 @@ const handleMouseUp = () => {
   document.body.style.userSelect = ''
 }
 
-// 响应式处理：窗口大小改变时保持比例
 const handleResize = () => {
   checkMobile()
 }
 
 onMounted(() => {
   checkMobile()
+  leftWidthPercent.value = clampLeftWidth(leftWidthPercent.value)
   window.addEventListener('resize', handleResize)
 })
 
@@ -125,11 +149,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="containerRef" class="split-pane-container">
-    <div
-      ref="leftPanelRef"
-      class="split-pane-left"
-      :style="leftWidthStyle"
-    >
+    <div class="split-pane-left" :style="leftWidthStyle">
       <slot name="left">
         <div class="default-panel">
           <el-empty description="左侧面板" />
@@ -138,7 +158,6 @@ onUnmounted(() => {
     </div>
 
     <div
-      ref="dividerRef"
       class="split-pane-divider"
       :class="{ dragging: isDragging, disabled: disabled }"
       @mousedown="handleMouseDown"
@@ -146,11 +165,7 @@ onUnmounted(() => {
       <div class="divider-handle"></div>
     </div>
 
-    <div
-      ref="rightPanelRef"
-      class="split-pane-right"
-      :style="rightWidthStyle"
-    >
+    <div class="split-pane-right" :style="rightWidthStyle">
       <slot name="right">
         <div class="default-panel">
           <el-empty description="右侧面板" />
@@ -178,12 +193,12 @@ onUnmounted(() => {
 }
 
 .split-pane-left {
-  background-color: #f5f7fa;
-  border-right: 1px solid #e4e7ed;
+  background-color: var(--el-bg-color-page, #f5f7fa);
+  border-right: 1px solid var(--el-border-color);
 }
 
 .split-pane-right {
-  background-color: #ffffff;
+  background-color: var(--el-bg-color);
 }
 
 .split-pane-divider {
@@ -191,17 +206,17 @@ onUnmounted(() => {
   height: 100%;
   cursor: col-resize;
   position: relative;
-  background-color: #e4e7ed;
+  background-color: var(--el-border-color);
   flex-shrink: 0;
   transition: background-color 0.2s ease;
   z-index: 10;
 
   &:hover:not(.disabled) {
-    background-color: #409eff;
+    background-color: var(--el-color-primary);
   }
 
   &.dragging {
-    background-color: #409eff;
+    background-color: var(--el-color-primary);
   }
 
   &.disabled {
@@ -217,7 +232,7 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   width: 20px;
   height: 40px;
-  background-color: #dcdfe6;
+  background-color: var(--el-fill-color-light);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -230,7 +245,7 @@ onUnmounted(() => {
     position: absolute;
     width: 2px;
     height: 12px;
-    background-color: #909399;
+    background-color: var(--el-text-color-secondary);
     border-radius: 1px;
   }
 
@@ -245,7 +260,7 @@ onUnmounted(() => {
 
 .split-pane-divider:hover:not(.disabled) .divider-handle,
 .split-pane-divider.dragging .divider-handle {
-  background-color: #409eff;
+  background-color: var(--el-color-primary);
 
   &::before,
   &::after {
@@ -261,7 +276,6 @@ onUnmounted(() => {
   padding: 20px;
 }
 
-// 响应式设计
 @media (max-width: 768px) {
   .split-pane-container {
     flex-direction: column;
@@ -299,28 +313,6 @@ onUnmounted(() => {
         left: 50%;
         transform: translateX(-50%);
       }
-    }
-  }
-}
-
-// 滚动条样式优化
-.split-pane-left,
-.split-pane-right {
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-
-    &:hover {
-      background: #a8a8a8;
     }
   }
 }

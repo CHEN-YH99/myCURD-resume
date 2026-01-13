@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Delete, Plus, MoreFilled } from '@element-plus/icons-vue'
+import { Delete, MoreFilled, Plus } from '@element-plus/icons-vue'
+import type { Component } from 'vue'
 
 type HeaderAction = {
-  icon?: any
+  icon?: Component
   label: string
   key: string
   danger?: boolean
@@ -13,7 +14,8 @@ const props = withDefaults(
   defineProps<{
     title: string
     subtitle?: string
-    icon?: string
+    /** Element Plus icon component */
+    icon?: Component
     modelValue?: boolean
     collapsible?: boolean
     defaultCollapsed?: boolean
@@ -25,7 +27,7 @@ const props = withDefaults(
   }>(),
   {
     subtitle: '',
-    icon: '',
+    icon: undefined,
     modelValue: true,
     collapsible: true,
     defaultCollapsed: false,
@@ -65,7 +67,10 @@ const onAction = (key: string) => emit('action', key)
   <section class="c-section-card" :class="{ 'is-disabled': !enabled }">
     <div class="c-section-card__header" @click="onHeaderClick">
       <div class="c-section-card__title">
-        <span v-if="icon" class="c-section-card__dot" :class="icon" />
+        <span class="c-section-card__icon">
+          <el-icon v-if="icon" class="c-section-card__icon-inner"><component :is="icon" /></el-icon>
+          <span v-else class="c-section-card__dot" />
+        </span>
         <span class="c-section-card__title-text">{{ title }}</span>
         <span v-if="subtitle" class="c-section-card__subtitle">{{ subtitle }}</span>
       </div>
@@ -76,7 +81,15 @@ const onAction = (key: string) => emit('action', key)
           <el-switch v-model="enabled" size="small" />
         </div>
 
-        <el-button v-if="addable" class="c-icon-btn" type="primary" plain size="small" :icon="Plus" @click="onAdd">
+        <el-button
+          v-if="addable"
+          class="c-icon-btn"
+          type="primary"
+          plain
+          size="small"
+          :icon="Plus"
+          @click="onAdd"
+        >
           {{ addText }}
         </el-button>
 
@@ -97,14 +110,7 @@ const onAction = (key: string) => emit('action', key)
           </template>
         </el-dropdown>
 
-        <el-button
-          v-else
-          class="c-icon-btn"
-          size="small"
-          :icon="Delete"
-          plain
-          @click="onAction('delete')"
-        />
+        <el-button v-else class="c-icon-btn" size="small" :icon="Delete" plain @click="onAction('delete')" />
       </div>
     </div>
 
@@ -146,6 +152,19 @@ const onAction = (key: string) => emit('action', key)
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.c-section-card__icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.c-section-card__icon-inner {
+  color: var(--el-color-primary);
+  font-size: 18px;
 }
 
 .c-section-card__dot {

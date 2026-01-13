@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import EditorHeaderBar from '@/components/editor/editorHeaderBar/index.vue'
 import SectionCard from '@/components/editor/sectionCard/index.vue'
 import ResumeRenderer from '@/components/preview/resumeRenderer/index.vue'
+import { Document, Postcard, User, Menu } from '@element-plus/icons-vue'
 import { useResumeStore } from '@/stores/resume'
 
 const router = useRouter()
@@ -30,14 +31,15 @@ const onExport = () => {
     <EditorHeaderBar v-model="mode" @back="onBack" @save="onSave" @export="onExport" />
 
     <main class="page-body">
-      <div class="editor-layout">
+      <div class="editor-layout" :class="{ 'single-mode': mode !== 'both' }">
         <section class="editor-left" :class="{ hidden: mode === 'preview' }">
           <div class="section-list">
-            <SectionCard title="简历标题" subtitle="简历模板" :collapsible="false">
+            <SectionCard :icon="Document" title="简历标题" subtitle="简历模板" :collapsible="false">
               <el-input v-model="resume.title.title" placeholder="请输入简历标题" />
             </SectionCard>
 
             <SectionCard
+              :icon="Postcard"
               v-model="resume.jobIntention.enabled"
               title="求职意向"
               show-toggle
@@ -57,10 +59,11 @@ const onExport = () => {
             </SectionCard>
 
             <SectionCard
+              :icon="User"
               v-model="resume.personInfo.enabled"
               title="个人信息"
               show-toggle
-              toggle-text="显示" 
+              toggle-text="显示"
               addable
               add-text="添加信息"
               @add="void 0"
@@ -97,7 +100,7 @@ const onExport = () => {
               </el-form>
             </SectionCard>
 
-            <SectionCard title="简历模块" addable add-text="添加模块" @add="void 0">
+            <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" @add="void 0">
               <div class="module-list">
                 <div class="module-item">
                   <span>教育背景</span>
@@ -134,7 +137,7 @@ const onExport = () => {
   flex: 1;
   min-height: 0;
   background: #f5f7fa;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .editor-layout {
@@ -144,18 +147,30 @@ const onExport = () => {
   box-sizing: border-box;
   display: flex;
   gap: 12px;
-  min-height: 100%;
+  height: 100%;
 }
 
 .editor-left {
-  flex: 1;
+  width: 50%;
   min-width: 0;
-  display: flex;
+  overflow-y: auto;
+  padding-right: 8px; // 为滚动条留出空间，防止内容跳动
 }
 
 .editor-right {
-  width: 380px;
-  flex: 0 0 380px;
+  width: 50%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.editor-layout.single-mode {
+  justify-content: center;
+
+  .editor-left,
+  .editor-right {
+    width: 100%;
+    max-width: 1200px;
+  }
 }
 
 .hidden {
