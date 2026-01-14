@@ -39,7 +39,18 @@ export interface JobIntention {
 
 export interface PersonInfo {
   enabled: boolean
+
+  preview: {
+    avatarShape: 'circle' | 'square'
+    columns: 1 | 2 | 3
+    showLabels: boolean
+  }
+
   avatarUrl: string
+
+  fields: Record<string, { enabled: boolean; label: string; value: string }>
+  order: string[]
+
   name: string
   gender: '男' | '女' | '未知'
   age: number

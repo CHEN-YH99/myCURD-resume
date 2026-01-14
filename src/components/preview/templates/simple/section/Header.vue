@@ -40,12 +40,40 @@ const showAvatar = computed(() => {
           </template>
         </div>
 
-        <div v-if="resume.personInfo.enabled" class="r-header__contact">
-          <span class="item">{{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁</span>
-          <span class="item">{{ resume.personInfo.phone }}</span>
-          <span class="item">{{ resume.personInfo.email }}</span>
-          <span class="item">{{ resume.personInfo.wechat }}</span>
-          <a class="item link" :href="resume.personInfo.github" target="_blank" rel="noreferrer">{{ resume.personInfo.github }}</a>
+        <div
+          v-if="resume.personInfo.enabled"
+          class="r-header__contact"
+          :class="{
+            'is-two-columns': resume.personInfo.preview?.columns === 2,
+            'is-three-columns': resume.personInfo.preview?.columns === 3
+          }"
+        >
+          <span class="item">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">姓名：</span>
+            {{ resume.personInfo.name }}
+          </span>
+
+          <span class="item">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">性别/年龄：</span>
+            {{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁
+          </span>
+
+          <span class="item">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">电话：</span>
+            {{ resume.personInfo.phone }}
+          </span>
+          <span class="item">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">邮箱：</span>
+            {{ resume.personInfo.email }}
+          </span>
+          <span class="item">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">微信：</span>
+            {{ resume.personInfo.wechat }}
+          </span>
+          <a class="item link" :href="resume.personInfo.github" target="_blank" rel="noreferrer">
+            <span v-if="resume.personInfo.preview?.showLabels" class="label">Github：</span>
+            {{ resume.personInfo.github }}
+          </a>
         </div>
       </div>
 
@@ -146,7 +174,7 @@ const showAvatar = computed(() => {
 .r-header__avatar {
   width: 78px;
   height: 78px;
-  border-radius: 50%;
+  border-radius: var(--r-avatar-radius, 50%);
   overflow: hidden;
   border: 3px solid var(--el-color-primary-light-9);
   background: #fff;
@@ -190,8 +218,32 @@ const showAvatar = computed(() => {
   color: #111827;
 }
 
+.r-header__contact.is-two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
+  align-items: start;
+}
+
+.r-header__contact.is-three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
+  align-items: start;
+}
+
 .item {
   white-space: nowrap;
+}
+
+.r-header__contact.is-two-columns .item {
+  white-space: normal;
+}
+
+.label {
+  color: #6b7280;
 }
 
 .link {

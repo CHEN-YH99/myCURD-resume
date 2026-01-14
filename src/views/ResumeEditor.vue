@@ -19,6 +19,8 @@ import {
   EditPen,
   Delete,
   Rank,
+  ArrowDown,
+  View,
 } from '@element-plus/icons-vue'
 import { useResumeStore } from '@/stores/resume'
 
@@ -286,6 +288,34 @@ const onExport = () => {
               :hide-delete="true"
               @add="void 0"
             >
+              <template #tools>
+                <el-button-group class="person-info-tools">
+                  <el-tooltip content="头像形状" placement="bottom">
+                    <el-button size="small" plain @click="resume.personInfo.preview.avatarShape = resume.personInfo.preview.avatarShape === 'circle' ? 'square' : 'circle'">
+                      {{ resume.personInfo.preview.avatarShape === 'circle' ? '圆形' : '方形' }}
+                    </el-button>
+                  </el-tooltip>
+
+                  <el-dropdown trigger="click" @command="(c) => resume.personInfo.preview.columns = c">
+                    <el-button size="small">
+                      {{ resume.personInfo.preview.columns }}列 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item :command="1">1列</el-dropdown-item>
+                        <el-dropdown-item :command="2">2列</el-dropdown-item>
+                        <el-dropdown-item :command="3">3列</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+
+                  <el-tooltip content="预览标签显示" placement="bottom">
+                    <el-button size="small" @click="resume.personInfo.preview.showLabels = !resume.personInfo.preview.showLabels">
+                      <el-icon><View /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                </el-button-group>
+              </template>
               <el-form label-width="80px">
                 <el-form-item label="头像" class="person-avatar-form-item">
                   <div class="person-avatar-form-item__content">
@@ -307,7 +337,7 @@ const onExport = () => {
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="性别">
+                <el-form-item label="性别" class="person-info-grid-item">
                   <el-select v-model="resume.personInfo.gender" placeholder="请选择">
                     <el-option label="男" value="男" />
                     <el-option label="女" value="女" />
@@ -318,7 +348,7 @@ const onExport = () => {
                     </template>
                   </el-select>
                 </el-form-item>
-                <el-form-item label="年龄">
+                <el-form-item label="年龄" class="person-info-grid-item">
                   <el-input-number v-model="resume.personInfo.age" :min="0" :max="99">
                     <template #suffix>
                       <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
@@ -326,7 +356,7 @@ const onExport = () => {
                     </template>
                   </el-input-number>
                 </el-form-item>
-                <el-form-item label="电话">
+                <el-form-item label="电话" class="person-info-grid-item">
                   <el-input v-model="resume.personInfo.phone">
                     <template #suffix>
                       <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
@@ -334,7 +364,7 @@ const onExport = () => {
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="邮箱">
+                <el-form-item label="邮箱" class="person-info-grid-item">
                   <el-input v-model="resume.personInfo.email">
                     <template #suffix>
                       <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
@@ -342,7 +372,7 @@ const onExport = () => {
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="微信">
+                <el-form-item label="微信" class="person-info-grid-item">
                   <el-input v-model="resume.personInfo.wechat">
                     <template #suffix>
                       <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
@@ -350,7 +380,7 @@ const onExport = () => {
                     </template>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="Github">
+                <el-form-item label="Github" class="person-info-grid-item">
                   <el-input v-model="resume.personInfo.github">
                     <template #suffix>
                       <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
@@ -379,7 +409,12 @@ const onExport = () => {
 
         <aside class="editor-right" :class="{ hidden: mode === 'edit' }">
           <div class="preview-paper">
-            <ResumeRenderer :resume="resume" />
+            <ResumeRenderer
+              :resume="resume"
+              :style="{
+                '--r-avatar-radius': resume.personInfo.preview.avatarShape === 'circle' ? '50%' : '10px'
+              }"
+            />
           </div>
         </aside>
       </div>
@@ -416,6 +451,34 @@ const onExport = () => {
   align-items: center;
   gap: 8px;
 }
+
+.person-info-tools {
+  display: inline-flex;
+}
+
+.person-info-tools :deep(.el-button) {
+  padding: 4px 8px;
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: #fff;
+}
+
+.person-info-tools :deep(.el-button:hover) {
+  background-color: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
+  color: #fff;
+}
+
+.person-info-tools :deep(.el-button:active) {
+  background-color: var(--el-color-primary-dark-2);
+  border-color: var(--el-color-primary-dark-2);
+  color: #fff;
+}
+
+.person-info-tools :deep(.el-button:focus) {
+  color: #fff;
+}
+
 
 .job-intention-sort-item {
   :deep(.el-form-item__content) {

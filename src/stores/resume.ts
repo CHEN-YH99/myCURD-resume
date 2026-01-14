@@ -29,8 +29,27 @@ const createDefaultResume = (): ResumeData => ({
   },
   personInfo: {
     enabled: true,
+
+    preview: {
+      avatarShape: 'circle',
+      columns: 1,
+      showLabels: true
+    },
+
     avatarUrl: '/default-avatar.jpg',
-    name: '',
+
+    fields: {
+      name: { enabled: true, label: '姓名', value: '' },
+      gender: { enabled: true, label: '性别', value: '男' },
+      age: { enabled: true, label: '年龄', value: '27' },
+      phone: { enabled: true, label: '电话', value: '131xxxx8888' },
+      email: { enabled: true, label: '邮箱', value: 'admin@google.com' },
+      wechat: { enabled: true, label: '微信', value: '0123456789' },
+      github: { enabled: true, label: 'Github', value: 'https://github.com/wzd' }
+    },
+    order: ['name', 'gender', 'age', 'phone', 'email', 'wechat', 'github'],
+
+    name: '张三',
     gender: '男',
     age: 27,
     phone: '131xxxx8888',
