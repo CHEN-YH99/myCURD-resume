@@ -17,6 +17,24 @@ export interface JobIntention {
   position: string
   workYears: number
   city: string
+
+  /** 控制求职意向内部字段显示/添加 */
+  fields: {
+    workYears: boolean
+    position: boolean
+    city: boolean
+    salary: boolean
+    custom: boolean
+  }
+
+  /** 控制求职意向字段显示顺序 */
+  order: Array<keyof JobIntention['fields']>
+
+  salary?: string
+  custom?: {
+    title: string
+    value: string
+  }
 }
 
 export interface PersonInfo {

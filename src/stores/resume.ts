@@ -12,7 +12,20 @@ const createDefaultResume = (): ResumeData => ({
     enabled: true,
     position: 'Java高级开发工程师',
     workYears: 5,
-    city: '北京'
+    city: '北京',
+    fields: {
+      workYears: true,
+      position: true,
+      city: true,
+      salary: false,
+      custom: false
+    },
+    order: ['workYears', 'position', 'city', 'salary', 'custom'],
+    salary: '',
+    custom: {
+      title: '自定义',
+      value: ''
+    }
   },
   personInfo: {
     enabled: true,

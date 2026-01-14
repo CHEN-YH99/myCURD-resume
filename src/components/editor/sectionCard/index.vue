@@ -24,6 +24,7 @@ const props = withDefaults(
     addable?: boolean
     addText?: string
     actions?: HeaderAction[]
+    hideDelete?: boolean
   }>(),
   {
     subtitle: '',
@@ -36,6 +37,7 @@ const props = withDefaults(
     addable: false,
     addText: '添加',
     actions: () => [],
+    hideDelete: false,
   }
 )
 
@@ -76,22 +78,23 @@ const onAction = (key: string) => emit('action', key)
       </div>
 
       <div class="c-section-card__tools" @click.stop>
-        <div v-if="showToggle" class="c-section-card__toggle">
-          <span class="c-section-card__toggle-text">{{ toggleText }}</span>
-          <el-switch v-model="enabled" size="small" />
-        </div>
+        <slot name="tools" />
 
         <el-button
           v-if="addable"
-          class="c-icon-btn"
+          class="custom-add-btn"
           type="primary"
-          plain
           size="small"
           :icon="Plus"
           @click="onAdd"
         >
           {{ addText }}
         </el-button>
+
+        <div v-if="showToggle" class="c-section-card__toggle">
+          <span class="c-section-card__toggle-text">{{ toggleText }}</span>
+          <el-switch v-model="enabled" size="small" />
+        </div>
 
         <el-dropdown v-if="actions && actions.length" trigger="click" @command="onAction">
           <el-button class="c-icon-btn" size="small" :icon="MoreFilled" />
@@ -110,7 +113,7 @@ const onAction = (key: string) => emit('action', key)
           </template>
         </el-dropdown>
 
-        <el-button v-else class="c-icon-btn" size="small" :icon="Delete" plain @click="onAction('delete')" />
+        <el-button v-else-if="!hideDelete" class="c-icon-btn" size="small" :icon="Delete" plain @click="onAction('delete')" />
       </div>
     </div>
 
@@ -140,7 +143,6 @@ const onAction = (key: string) => emit('action', key)
   padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   background: #f7fbff;
   border-bottom: 1px solid var(--el-border-color-lighter);
@@ -189,6 +191,7 @@ const onAction = (key: string) => emit('action', key)
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
 .c-section-card__toggle {
@@ -210,7 +213,47 @@ const onAction = (key: string) => emit('action', key)
   border-radius: 8px;
 }
 
+.custom-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--el-color-primary);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  background-color: var(--el-color-primary);
+  color: #fff;
+
+  &:hover {
+    background-color: var(--el-color-primary-light-3);
+    border-color: var(--el-color-primary-light-3);
+    color: #fff;
+  }
+
+  &:focus {
+    color: #fff;
+  }
+}
+
+:deep(.custom-add-btn .el-icon) {
+  color: #fff;
+}
+
+:deep(.custom-add-btn.el-button span) {
+  visibility: visible !important;
+  font-size: 12px !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
 :deep(.el-dropdown-menu__item.is-danger) {
   color: var(--el-color-danger);
 }
+
+
+
+
+
+
 </style>
