@@ -287,13 +287,17 @@ const onExport = () => {
               @add="void 0"
             >
               <el-form label-width="80px">
-                <el-form-item label="头像">
-                  <el-input v-model="resume.personInfo.avatarUrl" placeholder="头像地址占位">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
-                    </template>
-                  </el-input>
+                <el-form-item label="头像" class="person-avatar-form-item">
+                  <div class="person-avatar-form-item__content">
+                    <div class="person-avatar-placeholder" aria-hidden="true"></div>
+
+                    <el-input v-model="resume.personInfo.avatarUrl" placeholder="头像地址占位">
+                      <template #suffix>
+                        <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                        <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                      </template>
+                    </el-input>
+                  </div>
                 </el-form-item>
                 <el-form-item label="姓名">
                   <el-input v-model="resume.personInfo.name" placeholder="请输入姓名">
@@ -656,6 +660,37 @@ const onExport = () => {
 
 :deep(.add-module-popper) {
   padding: 6px 6px;
+}
+
+.person-avatar-form-item {
+  :deep(.el-form-item__content) {
+    position: relative;
+  }
+}
+
+.person-avatar-form-item__content {
+  position: relative;
+  width: 100%;
+}
+
+.person-avatar-form-item__content {
+  :deep(.el-input) {
+    width: 100%;
+  }
+}
+
+.person-avatar-placeholder {
+  position: absolute;
+  left: -64px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: 6px;
+
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  border: 1px dashed var(--el-border-color);
+  background: var(--el-fill-color-lighter);
 }
 
 </style>
