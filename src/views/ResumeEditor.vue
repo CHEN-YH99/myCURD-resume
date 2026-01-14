@@ -45,7 +45,7 @@ const jobIntentionItems = computed<JobIntentionItem[]>(() => {
     position: '求职意向',
     city: '期望城市',
     salary: '期望薪资',
-    custom: '自定义',
+    custom: ((resume.value.jobIntention as any).custom?.title as string) || '' ,
   }
 
   return resume.value.jobIntention.order
@@ -90,7 +90,7 @@ const enableModule = (key: AddableModuleKey) => {
 
   if (key === 'custom') {
     ;(resume.value.jobIntention as any).custom = {
-      title: '自定义',
+      title: '',
       value: ''
     }
   }
@@ -208,7 +208,11 @@ const onExport = () => {
                   }"
                 >
                   <template #item="{ element }">
-                    <el-form-item :label="element.label" class="job-intention-sort-item">
+                    <el-form-item
+                      :label="element.label"
+                      class="job-intention-sort-item"
+                      :class="{ 'is-custom': element.key === 'custom' }"
+                    >
                       <template v-if="element.key === 'workYears'">
                         <el-input-number v-model="resume.jobIntention.workYears" :min="0" :max="50">
                           <template #suffix>
@@ -246,15 +250,24 @@ const onExport = () => {
                       </template>
 
                       <template v-else-if="element.key === 'custom'">
-                        <div class="custom-pair">
-                          <el-input v-model="(resume.jobIntention as any).custom.title" placeholder="请输入标题">
-                            <template #suffix>
-                              <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                              <el-icon class="suffix-action" @click="removeModule('custom')"><Delete /></el-icon>
-                            </template>
-                          </el-input>
-                          <el-input v-model="(resume.jobIntention as any).custom.value" placeholder="请输入内容" />
-                        </div>
+                        <el-input
+                          class="job-intention-custom-value-input"
+                          v-model="(resume.jobIntention as any).custom.value"
+                          placeholder="请输入内容"
+                        >
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action" @click="removeModule('custom')"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </template>
+
+                      <template #label v-if="element.key === 'custom'">
+                        <el-input
+                          class="job-intention-custom-label-input"
+                          v-model="(resume.jobIntention as any).custom.title"
+                          placeholder="输入标题"
+                        />
                       </template>
                     </el-form-item>
                   </template>
@@ -406,15 +419,47 @@ const onExport = () => {
     align-items: center;
     gap: 8px;
   }
+}
 
-  .custom-pair {
-    flex: 1;
-    display: flex;
-    gap: 8px;
+.job-intention-custom-label-input {
+  width: 56px;
+}
 
-    :deep(.el-input) {
-      flex: 1;
+.job-intention-custom-label-input {
+  :deep(.el-input__wrapper) {
+    height: 32px;
+    line-height: 32px;
+    display: inline-flex;
+    align-items: center;
+
+    box-shadow: none !important;
+    background-color: transparent;
+    padding: 0;
+
+    &:hover {
+      box-shadow: 0 0 0 1px var(--el-input-hover-border-color, var(--el-border-color)) inset !important;
     }
+  }
+
+  :deep(.el-input__inner) {
+    padding: 0;
+    height: 32px;
+    line-height: 32px;
+  }
+
+  :deep(.el-input.is-focus .el-input__wrapper) {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+  }
+}
+
+.job-intention-custom-value-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.job-intention-custom-value-input {
+  :deep(.el-input) {
+    width: 100%;
   }
 }
 
