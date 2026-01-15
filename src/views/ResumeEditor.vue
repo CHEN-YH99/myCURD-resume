@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import Draggable from 'vuedraggable'
 import type { Component } from 'vue'
 import { useRouter } from 'vue-router'
@@ -24,6 +24,8 @@ import {
 } from '@element-plus/icons-vue'
 import { useResumeStore } from '@/stores/resume'
 
+const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
 const router = useRouter()
 const store = useResumeStore()
 
@@ -47,7 +49,7 @@ const jobIntentionItems = computed<JobIntentionItem[]>(() => {
     position: '求职意向',
     city: '期望城市',
     salary: '期望薪资',
-    custom: ((resume.value.jobIntention as any).custom?.title as string) || '' ,
+    custom: ((resume.value.jobIntention as any).custom?.title as string) || '',
   }
 
   return resume.value.jobIntention.order
@@ -93,7 +95,7 @@ const enableModule = (key: AddableModuleKey) => {
   if (key === 'custom') {
     ;(resume.value.jobIntention as any).custom = {
       title: '',
-      value: ''
+      value: '',
     }
   }
 }
@@ -107,7 +109,9 @@ const removeModule = (key: AddableModuleKey) => {
 }
 
 const addedModulesCount = computed(() => {
-  const enabledJobIntentionFields = (Object.keys(resume.value.jobIntention.fields) as Array<keyof typeof resume.value.jobIntention.fields>)
+  const enabledJobIntentionFields = (
+    Object.keys(resume.value.jobIntention.fields) as Array<keyof typeof resume.value.jobIntention.fields>
+  )
     .map((k) => resume.value.jobIntention.fields[k])
     .filter(Boolean).length
 
@@ -124,6 +128,52 @@ const onSave = () => {
 
 const onExport = () => {
   void 0
+}
+
+const customLabelRefs = ref<Record<string, any>>({})
+
+const setCustomLabelRef = (key: string) => (el: any) => {
+  if (!el) {
+    delete customLabelRefs.value[key]
+    return
+  }
+  customLabelRefs.value[key] = el
+}
+
+const keepCursorAtEndByKey = (key: string) => {
+  void nextTick(() => {
+    const inst = customLabelRefs.value[key]
+    const inputEl = inst?.input || inst?.$el?.querySelector?.('input')
+    if (!inputEl) return
+    try {
+      const len = (inputEl.value || '').length
+      inputEl.setSelectionRange(len, len)
+      requestAnimationFrame(() => {
+        try {
+          inputEl.setSelectionRange(len, len)
+        } catch {
+          // ignore
+        }
+      })
+    } catch {
+      // ignore
+    }
+  })
+}
+
+const addPersonInfoField = () => {
+  const key = `custom-${uid()}`
+  ;(resume.value.personInfo.fields as any)[key] = { enabled: true, label: '自定义', value: '' }
+  if (resume.value.personInfo.order.indexOf(key) === -1) {
+    resume.value.personInfo.order.push(key)
+  }
+}
+
+const removePersonInfoField = (key: string) => {
+  const builtIn = ['name', 'gender', 'age', 'phone', 'email', 'wechat', 'github']
+  if (builtIn.indexOf(key) !== -1) return
+  delete (resume.value.personInfo.fields as any)[key]
+  resume.value.personInfo.order = resume.value.personInfo.order.filter((k: string) => k !== key)
 }
 </script>
 
@@ -160,17 +210,10 @@ const onExport = () => {
               :hide-delete="true"
             >
               <template #tools>
-                <el-popover
-                  placement="bottom-end"
-                  :width="220"
-                  trigger="click"
-                  popper-class="add-module-popper"
-                >
+                <el-popover placement="bottom-end" :width="220" trigger="click" popper-class="add-module-popper">
                   <template #reference>
                     <div class="job-intention-tools">
-                      <el-button type="primary" size="small" :icon="Plus">
-                        添加 ({{ addedModulesCount }}/{{ totalModules }})
-                      </el-button>
+                      <el-button type="primary" size="small" :icon="Plus"> 添加 ({{ addedModulesCount }}/{{ totalModules }}) </el-button>
                     </div>
                   </template>
 
@@ -201,20 +244,18 @@ const onExport = () => {
                   handle=".drag-handle"
                   :animation="150"
                   @update:list="(v: JobIntentionItem[]) => (jobIntentionOrder = v.map((i: JobIntentionItem) => i.key))"
-                  @end="(evt: any) => {
-                    const moved = evt?.item?.__draggable_context?.element?.key
-                    if (!moved) return
-                    const enabled = jobIntentionItems.map((x) => x.key)
-                    const disabled = jobIntentionOrder.filter((k: AddableModuleKey) => enabled.indexOf(k) === -1)
-                    jobIntentionOrder = [...enabled, ...disabled]
-                  }"
+                  @end="
+                    (evt: any) => {
+                      const moved = evt?.item?.__draggable_context?.element?.key
+                      if (!moved) return
+                      const enabled = jobIntentionItems.map((x) => x.key)
+                      const disabled = jobIntentionOrder.filter((k: AddableModuleKey) => enabled.indexOf(k) === -1)
+                      jobIntentionOrder = [...enabled, ...disabled]
+                    }
+                  "
                 >
                   <template #item="{ element }">
-                    <el-form-item
-                      :label="element.label"
-                      class="job-intention-sort-item"
-                      :class="{ 'is-custom': element.key === 'custom' }"
-                    >
+                    <el-form-item :label="element.label" class="job-intention-sort-item" :class="{ 'is-custom': element.key === 'custom' }">
                       <template v-if="element.key === 'workYears'">
                         <el-input-number v-model="resume.jobIntention.workYears" :min="0" :max="50">
                           <template #suffix>
@@ -252,11 +293,7 @@ const onExport = () => {
                       </template>
 
                       <template v-else-if="element.key === 'custom'">
-                        <el-input
-                          class="job-intention-custom-value-input"
-                          v-model="(resume.jobIntention as any).custom.value"
-                          placeholder="请输入内容"
-                        >
+                        <el-input class="job-intention-custom-value-input" v-model="(resume.jobIntention as any).custom.value" placeholder="请输入内容">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
                             <el-icon class="suffix-action" @click="removeModule('custom')"><Delete /></el-icon>
@@ -266,9 +303,13 @@ const onExport = () => {
 
                       <template #label v-if="element.key === 'custom'">
                         <el-input
+                          :ref="setCustomLabelRef('jobIntention-custom')"
                           class="job-intention-custom-label-input"
                           v-model="(resume.jobIntention as any).custom.title"
                           placeholder="输入标题"
+                          @focus="keepCursorAtEndByKey('jobIntention-custom')"
+                          @click="keepCursorAtEndByKey('jobIntention-custom')"
+                          @input="keepCursorAtEndByKey('jobIntention-custom')"
                         />
                       </template>
                     </el-form-item>
@@ -286,20 +327,25 @@ const onExport = () => {
               addable
               add-text="添加信息"
               :hide-delete="true"
-              @add="void 0"
+              @add="addPersonInfoField"
             >
               <template #tools>
                 <el-button-group class="person-info-tools">
                   <el-tooltip content="头像形状" placement="bottom">
-                    <el-button size="small" plain @click="resume.personInfo.preview.avatarShape = resume.personInfo.preview.avatarShape === 'circle' ? 'square' : 'circle'">
+                    <el-button
+                      size="small"
+                      plain
+                      @click="
+                        resume.personInfo.preview.avatarShape =
+                          resume.personInfo.preview.avatarShape === 'circle' ? 'square' : 'circle'
+                      "
+                    >
                       {{ resume.personInfo.preview.avatarShape === 'circle' ? '圆形' : '方形' }}
                     </el-button>
                   </el-tooltip>
 
                   <el-dropdown trigger="click" @command="(c: number) => (resume.personInfo.preview.columns = c)">
-                    <el-button size="small">
-                      {{ resume.personInfo.preview.columns }}列 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-                    </el-button>
+                    <el-button size="small"> {{ resume.personInfo.preview.columns }}列 <el-icon class="el-icon--right"><ArrowDown /></el-icon> </el-button>
                     <template #dropdown>
                       <el-dropdown-menu>
                         <el-dropdown-item :command="1">1列</el-dropdown-item>
@@ -420,7 +466,30 @@ const onExport = () => {
                     </template>
 
                     <template v-else>
-                      <div style="display:none"></div>
+                      <el-form-item class="person-info-grid-item job-intention-sort-item is-custom">
+                        <template #label>
+                          <el-input
+                            :ref="setCustomLabelRef(key)"
+                            class="job-intention-custom-label-input"
+                            v-model="(resume.personInfo.fields as any)[key].label"
+                            placeholder="输入标题"
+                            @focus="keepCursorAtEndByKey(key)"
+                            @click="keepCursorAtEndByKey(key)"
+                            @input="keepCursorAtEndByKey(key)"
+                          />
+                        </template>
+
+                        <el-input
+                          class="job-intention-custom-value-input"
+                          v-model="(resume.personInfo.fields as any)[key].value"
+                          placeholder="请输入内容"
+                        >
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action" @click="removePersonInfoField(key)"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
                   </template>
                 </Draggable>
@@ -448,7 +517,7 @@ const onExport = () => {
             <ResumeRenderer
               :resume="resume"
               :style="{
-                '--r-avatar-radius': resume.personInfo.preview.avatarShape === 'circle' ? '50%' : '10px'
+                '--r-avatar-radius': resume.personInfo.preview.avatarShape === 'circle' ? '50%' : '10px',
               }"
             />
           </div>
@@ -515,13 +584,12 @@ const onExport = () => {
   color: #fff;
 }
 
-
 .job-intention-sort-item {
   :deep(.el-form-item__content) {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
+}
 }
 
 .job-intention-custom-label-input {
@@ -548,6 +616,8 @@ const onExport = () => {
     padding: 0;
     height: 32px;
     line-height: 32px;
+    text-align: right;
+    direction: rtl;
   }
 
   :deep(.el-input.is-focus .el-input__wrapper) {
@@ -652,7 +722,6 @@ const onExport = () => {
   border-radius: 8px;
   background: #fff;
 }
-
 
 .preview-paper {
   position: sticky;
@@ -791,5 +860,4 @@ const onExport = () => {
   border: 1px dashed var(--el-border-color);
   background: var(--el-fill-color-lighter);
 }
-
 </style>

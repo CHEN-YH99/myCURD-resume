@@ -83,6 +83,11 @@ const showAvatar = computed(() => {
               <span v-if="resume.personInfo.preview?.showLabels" class="label">Github：</span>
               {{ resume.personInfo.github }}
             </a>
+
+            <span v-else-if="resume.personInfo.fields?.[key]?.enabled !== false" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">{{ resume.personInfo.fields?.[key]?.label }}：</span>
+              {{ resume.personInfo.fields?.[key]?.value }}
+            </span>
           </template>
         </div>
       </div>
