@@ -113,6 +113,8 @@ export type ResumeModuleCommon = {
   title: string
   /** 模块标题左侧展示的图标（先用 emoji/字符做最小实现） */
   icon?: string
+  /** 模块时间（预览右上角展示），monthrange：['YYYY-MM','YYYY-MM'] */
+  time?: [string, string] | string
   /** 自定义网格行：点击 +1/+2... 生成 */
   rows?: ResumeModuleGridRow[]
 }

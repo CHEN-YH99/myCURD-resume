@@ -9,32 +9,37 @@ defineProps<{
 <template>
   <section class="r-block">
     <div class="r-block__title">
-      <span class="icon">{{ resume.modules.workExp.icon || '💼' }}</span>
-      <span>{{ resume.modules.workExp.title }}</span>
+      <div class="r-block__title-left">
+        <span class="icon">{{ resume.modules.workExp.icon || '💼' }}</span>
+        <span>{{ resume.modules.workExp.title }}</span>
+      </div>
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.workExp.rows && resume.modules.workExp.rows.length > 0" class="r-grid-container">
-      <div
-        v-for="(row, rowIndex) in resume.modules.workExp.rows"
-        :key="rowIndex"
-        class="r-split-row"
-      >
-        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
-          {{ value }}
+    <div class="r-block__content-wrapper">
+      <span v-if="Array.isArray(resume.modules.workExp.time) && resume.modules.workExp.time.length === 2 && resume.modules.workExp.time[0] && resume.modules.workExp.time[1]" class="r-block__content-time">{{ resume.modules.workExp.time[0] }} - {{ resume.modules.workExp.time[1] }}</span>
+
+      <div v-if="resume.modules.workExp.rows && resume.modules.workExp.rows.length > 0" class="r-grid-container">
+        <div
+          v-for="(row, rowIndex) in resume.modules.workExp.rows"
+          :key="rowIndex"
+          class="r-split-row"
+        >
+          <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+            {{ value }}
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-else-if="resume.modules.workExp.items.length > 0" class="r-block__list">
-      <div v-for="item in resume.modules.workExp.items" :key="item.id" class="r-block__item">
-        <div class="r-block__item-header">
-          <div class="r-block__item-title">
-            <span class="r-block__item-company">{{ item.company }}</span>
-            <span class="r-block__item-role">{{ item.title }}</span>
+      <div v-else-if="resume.modules.workExp.items.length > 0" class="r-block__list">
+        <div v-for="item in resume.modules.workExp.items" :key="item.id" class="r-block__item">
+          <div class="r-block__item-header">
+            <div class="r-block__item-title">
+              <span class="r-block__item-company">{{ item.company }}</span>
+              <span class="r-block__item-role">{{ item.title }}</span>
+            </div>
+            <div v-if="!resume.modules.workExp.time || !resume.modules.workExp.time[0]" class="r-block__item-duration">{{ item.start }} - {{ item.end }}</div>
           </div>
-          <div class="r-block__item-duration">{{ item.start }} - {{ item.end }}</div>
-        </div>
 
         <div v-if="item.highlights?.length" class="r-block__highlights">
           <div v-for="(h, idx) in item.highlights" :key="idx" class="r-block__highlight">- {{ h }}</div>
@@ -43,6 +48,7 @@ defineProps<{
     </div>
 
     <div v-else class="r-block__empty">暂无工作经历</div>
+    </div>
   </section>
 </template>
 
@@ -50,6 +56,7 @@ defineProps<{
 .r-block__title {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   font-size: 20px;
   font-weight: 800;
@@ -57,10 +64,39 @@ defineProps<{
   margin-bottom: 10px;
 }
 
+.r-block__title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.r-block__time {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
 .r-block__line {
   height: 1px;
   background: #e5e7eb;
   margin-bottom: 16px;
+}
+
+.r-block__content-wrapper {
+  position: relative;
+  padding-top: 22px;
+}
+
+.r-block__content-time {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 .r-block__list {

@@ -9,8 +9,10 @@ defineProps<{
 <template>
   <section class="r-block">
     <div class="r-block__title">
-      <span class="icon">{{ resume.modules.education.icon || '🎓' }}</span>
-      <span>{{ resume.modules.education.title }}</span>
+      <div class="r-block__title-left">
+        <span class="icon">{{ resume.modules.education.icon || '🎓' }}</span>
+        <span>{{ resume.modules.education.title }}</span>
+      </div>
     </div>
     <div class="r-block__line" />
 
@@ -50,11 +52,26 @@ defineProps<{
 .r-block__title {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   font-size: 20px;
   font-weight: 800;
   color: #111827;
   margin-bottom: 10px;
+}
+
+.r-block__title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.r-block__time {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 .r-block__line {

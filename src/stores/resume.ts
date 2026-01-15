@@ -64,6 +64,7 @@ const createDefaultResume = (): ResumeData => ({
       enabled: true,
       title: '教育背景',
       icon: '🎓',
+      time: ['', ''],
       rows: [],
       items: [
         {
@@ -80,6 +81,7 @@ const createDefaultResume = (): ResumeData => ({
       enabled: true,
       title: '专业技能',
       icon: '🛠️',
+      time: ['', ''],
       rows: [],
       items: [
         {
@@ -94,6 +96,7 @@ const createDefaultResume = (): ResumeData => ({
       enabled: true,
       title: '工作经历',
       icon: '💼',
+      time: ['', ''],
       rows: [],
       items: [
         {
@@ -111,6 +114,7 @@ const createDefaultResume = (): ResumeData => ({
       enabled: true,
       title: '项目经历',
       icon: '📌',
+      time: ['', ''],
       rows: [],
       items: [
         {
@@ -129,6 +133,7 @@ const createDefaultResume = (): ResumeData => ({
       enabled: true,
       title: '自我评价',
       icon: '📝',
+      time: ['', ''],
       rows: [],
       value: {
         enabled: true,

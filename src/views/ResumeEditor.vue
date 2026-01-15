@@ -179,6 +179,7 @@ const addCustomResumeModule = () => {
     enabled: true,
     title: '自定义模块',
     icon: '⭐',
+    time: ['', ''],
     rows: [],
   }
   resume.value.modulesOrder = [...resume.value.modulesOrder, key as any]
@@ -663,7 +664,44 @@ const removePersonInfoField = (key: string) => {
                           <span class="module-item__title">{{ element.title }}</span>
                         </div>
 
-                        <div class="module-item__right">
+                        <div v-if="element.key === 'education'" class="module-item__right module-item__right--with-add">
+                          <el-button
+                            size="small"
+                            type="primary"
+                            plain
+                            class="module-panel__edu-add-btn"
+                            @click.stop="() => {
+                              const mod: any = getResumeModuleRef('education')
+                              if (!Array.isArray(mod.items)) mod.items = []
+                              mod.items.push({
+                                id: uid(),
+                                school: '',
+                                major: '',
+                                degree: '本科',
+                                start: Array.isArray(mod.time) ? (mod.time[0] || '') : '',
+                                end: Array.isArray(mod.time) ? (mod.time[1] || '') : '',
+                              })
+                            }"
+                          >
+                            添加教育经历
+                          </el-button>
+
+                          <el-icon
+                            class="module-icon"
+                            :class="{ 'is-rotated': element.expanded }"
+                            @click="toggleModuleExpanded(element.key)"
+                          >
+                            <ArrowDown />
+                          </el-icon>
+                          <el-icon class="module-icon module-icon--danger" @click="removeResumeModule(element.key)">
+                            <Delete />
+                          </el-icon>
+                          <el-icon class="module-icon module-drag-handle">
+                            <Rank />
+                          </el-icon>
+                        </div>
+
+                        <div v-else class="module-item__right">
                           <el-icon
                             class="module-icon"
                             :class="{ 'is-rotated': element.expanded }"
@@ -689,6 +727,89 @@ const removePersonInfoField = (key: string) => {
                               <el-icon><EditPen /></el-icon>
                             </template>
                           </el-input>
+
+                          <el-date-picker
+                            v-model="getResumeModuleRef(element.key).time"
+                            type="monthrange"
+                            unlink-panels
+                            start-placeholder="开始"
+                            end-placeholder="结束"
+                            format="YYYY-MM"
+                            value-format="YYYY-MM"
+                            class="module-panel__date"
+                            @change="() => {
+                              const mod: any = getResumeModuleRef(element.key)
+                              const t = Array.isArray(mod?.time) ? mod.time : ['', '']
+                              const start = t?.[0] || ''
+                              const end = t?.[1] || ''
+
+                              // 教育经历每条有独立时间，这里不做批量覆盖
+                              if (element.key === 'education') return
+
+                              if (Array.isArray(mod?.items)) {
+                                for (const it of mod.items) {
+                                  if (it && typeof it === 'object') {
+                                    it.start = start
+                                    it.end = end
+                                  }
+                                }
+                              }
+                            }"
+                          />
+
+                          <template v-if="element.key === 'education'">
+                            <div class="module-panel__edu">
+                              <div
+                                v-for="(it, idx) in ((getResumeModuleRef('education') as any).items || [])"
+                                :key="(it as any).id || idx"
+                                class="edu-item"
+                              >
+                                <div class="edu-item__row">
+                                  <el-input v-model="it.school" placeholder="学校" />
+                                  <el-select v-model="it.degree" placeholder="学历" style="width: 120px">
+                                    <el-option label="博士" value="博士" />
+                                    <el-option label="硕士" value="硕士" />
+                                    <el-option label="本科" value="本科" />
+                                    <el-option label="大专" value="大专" />
+                                    <el-option label="高中" value="高中" />
+                                    <el-option label="其他" value="其他" />
+                                  </el-select>
+                                  <el-button
+                                    size="small"
+                                    type="danger"
+                                    plain
+                                    @click="() => {
+                                      const mod: any = getResumeModuleRef('education')
+                                      if (!Array.isArray(mod.items)) return
+                                      mod.items.splice(idx, 1)
+                                    }"
+                                  >
+                                    删除
+                                  </el-button>
+                                </div>
+                                <div class="edu-item__row">
+                                  <el-input v-model="it.major" placeholder="专业" />
+
+                                  <el-date-picker
+                                    :model-value="[it.start, it.end]"
+                                    type="monthrange"
+                                    unlink-panels
+                                    start-placeholder="开始"
+                                    end-placeholder="结束"
+                                    format="YYYY-MM"
+                                    value-format="YYYY-MM"
+                                    class="edu-item__date"
+                                    @update:model-value="(v) => {
+                                      const arr: any = Array.isArray(v) ? v : ['', '']
+                                      it.start = arr?.[0] || ''
+                                      it.end = arr?.[1] || ''
+                                    }"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+
                           <el-popover placement="bottom" :width="180" trigger="click">
                             <template #reference>
                               <el-button class="module-panel__btn" plain>
@@ -709,6 +830,7 @@ const removePersonInfoField = (key: string) => {
                             </div>
                           </el-popover>
                         </div>
+
 
                         <div v-if="(getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
                           暂无内容，悬浮到此处添加行
@@ -1068,6 +1190,60 @@ const removePersonInfoField = (key: string) => {
   align-items: center;
   user-select: none;
   cursor: pointer;
+}
+
+.module-panel__edu {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edu-item {
+  padding: 10px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.edu-item__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edu-item__row + .edu-item__row {
+  margin-top: 10px;
+}
+
+.edu-item__row :deep(.el-input) {
+  flex: 1;
+  min-width: 0;
+}
+
+.edu-item__date {
+  flex: 0 0 auto;
+  width: 240px;
+}
+
+.edu-item__date :deep(.el-input) {
+  width: 100%;
+}
+
+.module-panel__edu-add-btn {
+  color: #fff !important;
+}
+
+.module-panel__edu-add-btn:hover {
+  color: #fff !important;
+}
+
+.module-item__right--with-add {
+  gap: 8px;
+}
+
+.module-item__right--with-add :deep(.el-button) {
+  color: #fff !important;
 }
 
 .module-icon-picker {
