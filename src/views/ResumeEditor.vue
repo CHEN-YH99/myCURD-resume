@@ -34,6 +34,30 @@ const resume = computed(() => store.resume.value)
 
 const totalModules = 6
 
+type ResumeModuleKey = 'education' | 'skills' | 'work'
+
+type ResumeModule = {
+  key: ResumeModuleKey
+  title: string
+  expanded: boolean
+}
+
+const resumeModules = ref<ResumeModule[]>([
+  { key: 'education', title: '教育背景', expanded: false },
+  { key: 'skills', title: '专业技能', expanded: true },
+  { key: 'work', title: '工作经历', expanded: false },
+])
+
+const toggleModuleExpanded = (key: ResumeModuleKey) => {
+  const m = resumeModules.value.find((x) => x.key === key)
+  if (!m) return
+  m.expanded = !m.expanded
+}
+
+const removeResumeModule = (key: ResumeModuleKey) => {
+  resumeModules.value = resumeModules.value.filter((m) => m.key !== key)
+}
+
 type AddableModuleKey = 'workYears' | 'position' | 'city' | 'salary' | 'custom'
 
 type AddableModule = { key: AddableModuleKey; label: string; icon: Component }
@@ -498,15 +522,68 @@ const removePersonInfoField = (key: string) => {
 
             <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" :hide-delete="true" show-toggle @add="void 0">
               <div class="module-list">
-                <div class="module-item">
-                  <span>教育背景</span>
-                </div>
-                <div class="module-item">
-                  <span>专业技能</span>
-                </div>
-                <div class="module-item">
-                  <span>工作经历</span>
-                </div>
+                <Draggable
+                  :list="resumeModules"
+                  item-key="key"
+                  handle=".module-drag-handle"
+                  :animation="150"
+                  class="module-draggable"
+                >
+                  <template #item="{ element }">
+                    <div class="module-wrapper">
+                      <div class="module-item" :class="{ 'is-expanded': element.expanded }">
+                        <div class="module-item__left">
+                          <span class="module-item__title">{{ element.title }}</span>
+                        </div>
+
+                        <div class="module-item__right">
+                          <el-icon
+                            class="module-icon"
+                            :class="{ 'is-rotated': element.expanded }"
+                            @click="toggleModuleExpanded(element.key)"
+                          >
+                            <ArrowDown />
+                          </el-icon>
+                          <el-icon class="module-icon module-icon--danger" @click="removeResumeModule(element.key)">
+                            <Delete />
+                          </el-icon>
+                          <el-icon class="module-icon module-drag-handle">
+                            <Rank />
+                          </el-icon>
+                        </div>
+                      </div>
+
+                      <transition name="module-collapse">
+                        <div v-show="element.expanded" class="module-panel">
+
+                        <div class="module-panel__row">
+                          <el-input class="module-panel__input" :model-value="element.title" placeholder="模块标题">
+                            <template #prefix>
+                              <el-icon><EditPen /></el-icon>
+                            </template>
+                          </el-input>
+                          <el-button class="module-panel__btn" plain>
+                            <el-icon style="margin-right: 6px"><Aim /></el-icon>
+                            选择图标
+                          </el-button>
+                        </div>
+
+                        <div class="module-panel__empty">暂无内容，悬浮到此处添加行</div>
+
+                        <div class="module-panel__footer">
+                          <div class="module-panel__tags">
+                            <div v-for="n in 6" :key="n" class="module-tag">+ {{ n }}</div>
+                            <div class="module-tag">+ ▷</div>
+                          </div>
+                          <div class="module-panel__actions">
+                            <el-button type="danger" size="small" :icon="Delete" />
+                          </div>
+                        </div>
+                        </div>
+                      </transition>
+                    </div>
+                  </template>
+                </Draggable>
               </div>
             </SectionCard>
           </div>
@@ -717,10 +794,136 @@ const removePersonInfoField = (key: string) => {
   height: 40px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 10px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
   background: #fff;
+}
+
+.module-item__left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.module-item__title {
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+}
+
+.module-item__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.module-icon {
+  color: var(--el-text-color-secondary);
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.module-icon:hover {
+  color: var(--el-color-primary);
+}
+
+.module-icon--danger:hover {
+  color: var(--el-color-danger);
+}
+
+.module-icon.is-rotated {
+  transform: rotate(180deg);
+}
+
+.module-drag-handle {
+  cursor: grab;
+}
+
+.module-drag-handle:active {
+  cursor: grabbing;
+}
+
+.module-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.module-item.is-expanded {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.module-panel {
+  margin-top: 0;
+  padding: 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-top: none;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background: #f5f7fa;
+}
+
+.module-panel__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.module-panel__empty {
+  margin-top: 12px;
+  padding: 22px 10px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--el-text-color-secondary);
+  text-align: center;
+  font-weight: 600;
+}
+
+.module-panel__footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.module-panel__tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.module-tag {
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #00b9a8;
+  color: #fff;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+
+.module-collapse-enter-active,
+.module-collapse-leave-active {
+  transition: max-height 0.22s ease, opacity 0.18s ease;
+  overflow: hidden;
+}
+
+.module-collapse-enter-from,
+.module-collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.module-collapse-enter-to,
+.module-collapse-leave-from {
+  max-height: 520px;
+  opacity: 1;
 }
 
 .preview-paper {
