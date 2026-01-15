@@ -8,6 +8,7 @@ import SkillsSection from './section/Skills.vue'
 import WorkExpSection from './section/WorkExp.vue'
 import ProjectExpSection from './section/ProjectExp.vue'
 import SelfIntroSection from './section/SelfIntro.vue'
+import CustomModuleSection from './section/CustomModule.vue'
 
 const props = defineProps<{
   resume: ResumeData
@@ -15,10 +16,17 @@ const props = defineProps<{
 
 const orderedModules = computed<ResumeModuleType[]>(() => {
   const base = props.resume.modulesOrder || []
-  const enabled = base.filter((k) => props.resume.modules[k]?.enabled)
-  const missing = (['education', 'skills', 'workExp', 'projectExp', 'selfIntro'] as ResumeModuleType[]).filter(
-    (k) => enabled.indexOf(k) === -1 && props.resume.modules[k]?.enabled,
-  )
+
+  const enabled = base.filter((k) => {
+    if ((props.resume.modules as any)[k]) return !!(props.resume.modules as any)[k].enabled
+    return !!(props.resume.modules.custom as any)?.[k]?.enabled
+  })
+
+  const missing = (['education', 'skills', 'workExp', 'projectExp', 'selfIntro'] as ResumeModuleType[]).filter((k) => {
+    if (enabled.indexOf(k) !== -1) return false
+    return !!(props.resume.modules as any)[k]?.enabled
+  })
+
   return [...enabled, ...missing]
 })
 </script>
@@ -34,6 +42,7 @@ const orderedModules = computed<ResumeModuleType[]>(() => {
         <WorkExpSection v-else-if="k === 'workExp'" :resume="resume" />
         <ProjectExpSection v-else-if="k === 'projectExp'" :resume="resume" />
         <SelfIntroSection v-else-if="k === 'selfIntro'" :resume="resume" />
+        <CustomModuleSection v-else :module="(resume.modules.custom as any)?.[k]" />
       </template>
 
       <BaseInfoSection v-if="resume.personInfo.enabled" :resume="resume" />

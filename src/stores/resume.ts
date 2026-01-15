@@ -59,6 +59,7 @@ const createDefaultResume = (): ResumeData => ({
   },
   modulesOrder: ['education', 'skills', 'workExp', 'projectExp', 'selfIntro'],
   modules: {
+    custom: {},
     education: {
       enabled: true,
       title: '教育背景',

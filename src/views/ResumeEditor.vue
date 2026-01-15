@@ -33,9 +33,9 @@ const store = useResumeStore()
 const mode = store.mode
 const resume = computed(() => store.resume.value)
 
-const totalModules = 6
+const totalModules = 5
 
-type ResumeModuleKey = 'education' | 'skills' | 'workExp' | 'projectExp' | 'selfIntro'
+type ResumeModuleKey = 'education' | 'skills' | 'workExp' | 'projectExp' | 'selfIntro' | `custom-${string}`
 
 type ResumeModule = {
   key: ResumeModuleKey
@@ -46,12 +46,18 @@ type ResumeModule = {
 const resumeModules = computed<ResumeModule[]>({
   get: () =>
     resume.value.modulesOrder
-      .filter((k: ResumeModuleKey) => resume.value.modules[k]?.enabled)
-      .map((k: ResumeModuleKey) => ({
-        key: k,
-        title: resume.value.modules[k].title,
-        expanded: expandedModuleKey.value === k,
-      })),
+      .filter((k: ResumeModuleKey) => {
+        const mod = (resume.value.modules as any)[k] || (resume.value.modules.custom as any)?.[k]
+        return !!mod?.enabled
+      })
+      .map((k: ResumeModuleKey) => {
+        const mod = (resume.value.modules as any)[k] || (resume.value.modules.custom as any)?.[k]
+        return {
+          key: k,
+          title: mod?.title || '',
+          expanded: expandedModuleKey.value === k,
+        }
+      }),
   set: (list: ResumeModule[]) => {
     resume.value.modulesOrder = list.map((m) => m.key)
   },
@@ -64,22 +70,82 @@ const toggleModuleExpanded = (key: ResumeModuleKey) => {
 }
 
 const removeResumeModule = (key: ResumeModuleKey) => {
-  const next = resume.value.modulesOrder.filter((k: ResumeModuleKey) => k !== key)
-  resume.value.modulesOrder = next
+  // 从排序中移除（预览按该字段渲染）
+  resume.value.modulesOrder = resume.value.modulesOrder.filter((k: ResumeModuleKey) => k !== key)
+
+  // 自定义模块需要同时从数据容器中移除，避免预览仍能读到旧数据
+  if (String(key).indexOf('custom-') === 0) {
+    delete (resume.value.modules.custom as any)[key]
+  } else {
+    // 内置模块删除表现为“隐藏”
+    if ((resume.value.modules as any)[key]) {
+      ;(resume.value.modules as any)[key].enabled = false
+    }
+  }
+
   if (expandedModuleKey.value === key) expandedModuleKey.value = null
 }
 
 const moduleIconOptions: { label: string; value: string }[] = [
-  { label: '🎓', value: '🎓' },
-  { label: '🛠️', value: '🛠️' },
-  { label: '💼', value: '💼' },
-  { label: '📌', value: '📌' },
-  { label: '📝', value: '📝' },
+  // 通用
   { label: '⭐', value: '⭐' },
+  { label: '✨', value: '✨' },
+  { label: '🔥', value: '🔥' },
+  { label: '✅', value: '✅' },
+  { label: '📌', value: '📌' },
+  { label: '📍', value: '📍' },
+  { label: '🔖', value: '🔖' },
+  { label: '🏷️', value: '🏷️' },
+  { label: '📎', value: '📎' },
+
+  // 学历/学习
+  { label: '🎓', value: '🎓' },
+  { label: '🏫', value: '🏫' },
+  { label: '📚', value: '📚' },
+  { label: '🧑‍🎓', value: '🧑‍🎓' },
+  { label: '📝', value: '📝' },
+
+  // 技能/工具
+  { label: '🛠️', value: '🛠️' },
+  { label: '⚙️', value: '⚙️' },
+  { label: '🔧', value: '🔧' },
+  { label: '🔨', value: '🔨' },
+  { label: '💡', value: '💡' },
+  { label: '🧠', value: '🧠' },
+  { label: '🧩', value: '🧩' },
+
+  // 工作/项目
+  { label: '💼', value: '💼' },
+  { label: '🏢', value: '🏢' },
+  { label: '📈', value: '📈' },
+  { label: '📊', value: '📊' },
+  { label: '🚀', value: '🚀' },
+  { label: '🧱', value: '🧱' },
+  { label: '🗂️', value: '🗂️' },
+
+  // 个人/联系
+  { label: '👤', value: '👤' },
+  { label: '📞', value: '📞' },
+  { label: '✉️', value: '✉️' },
+  { label: '🌐', value: '🌐' },
+  { label: '🐙', value: '🐙' },
+  { label: '📱', value: '📱' },
+
+  // 奖项/证书
+  { label: '🏆', value: '🏆' },
+  { label: '🥇', value: '🥇' },
+  { label: '🎖️', value: '🎖️' },
+  { label: '📜', value: '📜' },
+  { label: '🧾', value: '🧾' },
+
+  // 兴趣/性格
+  { label: '🎯', value: '🎯' },
+  { label: '🤝', value: '🤝' },
+  { label: '🌟', value: '🌟' },
 ]
 
 const ensureModuleRows = (key: ResumeModuleKey) => {
-  const mod = resume.value.modules[key] as any
+  const mod = getResumeModuleRef(key) as any
   if (!mod.rows) mod.rows = []
   return mod.rows as ResumeModuleGridRow[]
 }
@@ -99,6 +165,24 @@ const removeGridRow = (key: ResumeModuleKey, rowIndex: number) => {
 const clearModuleGrid = (key: ResumeModuleKey) => {
   const rows = ensureModuleRows(key)
   rows.splice(0, rows.length)
+}
+
+const getResumeModuleRef = (key: ResumeModuleKey) => {
+  const builtIn = (resume.value.modules as any)[key]
+  if (builtIn) return builtIn
+  return (resume.value.modules.custom as any)[key]
+}
+
+const addCustomResumeModule = () => {
+  const key = `custom-${uid()}` as ResumeModuleKey
+  ;(resume.value.modules.custom as any)[key] = {
+    enabled: true,
+    title: '自定义模块',
+    icon: '⭐',
+    rows: [],
+  }
+  resume.value.modulesOrder = [...resume.value.modulesOrder, key as any]
+  expandedModuleKey.value = key
 }
 
 type AddableModuleKey = 'workYears' | 'position' | 'city' | 'salary' | 'custom'
@@ -390,7 +474,7 @@ const removePersonInfoField = (key: string) => {
               v-model="resume.personInfo.enabled"
               title="个人信息"
               show-toggle
-              toggle-text="显示"
+              toggle-text="启用"
               addable
               add-text="添加信息"
               :hide-delete="true"
@@ -563,7 +647,7 @@ const removePersonInfoField = (key: string) => {
               </el-form>
             </SectionCard>
 
-            <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" :hide-delete="true" show-toggle @add="void 0">
+            <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" :hide-delete="true" show-toggle @add="addCustomResumeModule">
               <div class="module-list">
                 <Draggable
                   v-model="resumeModules"
@@ -600,7 +684,7 @@ const removePersonInfoField = (key: string) => {
                         <div v-show="element.expanded" class="module-panel">
 
                         <div class="module-panel__row">
-                          <el-input class="module-panel__input" v-model="resume.modules[element.key].title" placeholder="模块标题">
+                          <el-input class="module-panel__input" v-model="getResumeModuleRef(element.key).title" placeholder="模块标题">
                             <template #prefix>
                               <el-icon><EditPen /></el-icon>
                             </template>
@@ -608,7 +692,7 @@ const removePersonInfoField = (key: string) => {
                           <el-popover placement="bottom" :width="180" trigger="click">
                             <template #reference>
                               <el-button class="module-panel__btn" plain>
-                                <span style="margin-right: 8px">{{ resume.modules[element.key].icon || '⭐' }}</span>
+                                <span style="margin-right: 8px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
                                 选择图标
                               </el-button>
                             </template>
@@ -618,7 +702,7 @@ const removePersonInfoField = (key: string) => {
                                 v-for="opt in moduleIconOptions"
                                 :key="opt.value"
                                 class="module-icon-picker__item"
-                                @click="resume.modules[element.key].icon = opt.value"
+                                @click="getResumeModuleRef(element.key).icon = opt.value"
                               >
                                 {{ opt.label }}
                               </div>
@@ -626,12 +710,12 @@ const removePersonInfoField = (key: string) => {
                           </el-popover>
                         </div>
 
-                        <div v-if="(resume.modules[element.key].rows || []).length === 0" class="module-panel__empty">
+                        <div v-if="(getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
                           暂无内容，悬浮到此处添加行
                         </div>
                         <div v-else class="module-grid-editor">
                           <div
-                            v-for="(row, rowIndex) in resume.modules[element.key].rows"
+                            v-for="(row, rowIndex) in (getResumeModuleRef(element.key).rows as ResumeModuleGridRow[])"
                             :key="rowIndex"
                             class="module-grid-row"
                             :style="{ gridTemplateColumns: 'repeat(' + row.cols + ', 1fr)' }"
@@ -652,9 +736,9 @@ const removePersonInfoField = (key: string) => {
                             <div v-for="n in 6" :key="n" class="module-tag" @click="addGridRow(element.key, n as any)">+ {{ n }}</div>
                             <div class="module-tag" @click="clearModuleGrid(element.key)">清空</div>
                           </div>
-                          <div class="module-panel__actions">
+                          <!-- <div class="module-panel__actions">
                             <el-button type="danger" size="small" :icon="Delete" />
-                          </div>
+                          </div> -->
                         </div>
                         </div>
                       </transition>

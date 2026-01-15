@@ -6,6 +6,7 @@ export type ResumeModuleType =
   | 'workExp'
   | 'projectExp'
   | 'selfIntro'
+  | `custom-${string}`
 
 export interface ResumeTitle {
   title: string
@@ -132,6 +133,7 @@ export interface ResumeModules {
   selfIntro: ResumeModuleCommon & {
     value: SelfIntro
   }
+  custom: Record<string, ResumeModuleCommon>
 }
 
 export interface ResumeData {
