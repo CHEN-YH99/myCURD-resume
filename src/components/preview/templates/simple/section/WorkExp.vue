@@ -9,12 +9,24 @@ defineProps<{
 <template>
   <section class="r-block">
     <div class="r-block__title">
-      <span class="icon">💼</span>
+      <span class="icon">{{ resume.modules.workExp.icon || '💼' }}</span>
       <span>{{ resume.modules.workExp.title }}</span>
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.workExp.items.length > 0" class="r-block__list">
+    <div v-if="resume.modules.workExp.rows && resume.modules.workExp.rows.length > 0" class="r-grid-container">
+      <div
+        v-for="(row, rowIndex) in resume.modules.workExp.rows"
+        :key="rowIndex"
+        class="r-split-row"
+      >
+        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+          {{ value }}
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="resume.modules.workExp.items.length > 0" class="r-block__list">
       <div v-for="item in resume.modules.workExp.items" :key="item.id" class="r-block__item">
         <div class="r-block__item-header">
           <div class="r-block__item-title">
@@ -29,6 +41,7 @@ defineProps<{
         </div>
       </div>
     </div>
+
     <div v-else class="r-block__empty">暂无工作经历</div>
   </section>
 </template>
@@ -105,6 +118,26 @@ defineProps<{
   font-size: 14px;
   text-align: center;
   padding: 20px 0;
+}
+
+.r-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.r-split-row {
+  display: flex;
+  gap: 10px;
+}
+
+.r-split-cell {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .icon {

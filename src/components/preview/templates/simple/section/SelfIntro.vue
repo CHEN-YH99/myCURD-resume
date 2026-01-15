@@ -9,12 +9,24 @@ defineProps<{
 <template>
   <section class="r-block">
     <div class="r-block__title">
-      <span class="icon">🧾</span>
+      <span class="icon">{{ resume.modules.selfIntro.icon || '🧾' }}</span>
       <span>{{ resume.modules.selfIntro.title }}</span>
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.selfIntro.value.enabled" class="r-block__content">
+    <div v-if="resume.modules.selfIntro.rows && resume.modules.selfIntro.rows.length > 0" class="r-grid-container">
+      <div
+        v-for="(row, rowIndex) in resume.modules.selfIntro.rows"
+        :key="rowIndex"
+        class="r-split-row"
+      >
+        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+          {{ value }}
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="resume.modules.selfIntro.value.enabled" class="r-block__content">
       {{ resume.modules.selfIntro.value.text }}
     </div>
   </section>
@@ -41,6 +53,27 @@ defineProps<{
   font-size: 14px;
   line-height: 1.7;
   color: #111827;
+  white-space: pre-wrap;
+}
+
+.r-grid-container {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.r-split-row {
+  display: flex;
+  gap: 10px;
+}
+
+.r-split-cell {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-word;
   white-space: pre-wrap;
 }
 

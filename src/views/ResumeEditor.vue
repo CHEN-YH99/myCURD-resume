@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import type { ResumeModuleGridRow } from '@/types/resume'
 import Draggable from 'vuedraggable'
 import type { Component } from 'vue'
 import { useRouter } from 'vue-router'
@@ -66,6 +67,38 @@ const removeResumeModule = (key: ResumeModuleKey) => {
   const next = resume.value.modulesOrder.filter((k: ResumeModuleKey) => k !== key)
   resume.value.modulesOrder = next
   if (expandedModuleKey.value === key) expandedModuleKey.value = null
+}
+
+const moduleIconOptions: { label: string; value: string }[] = [
+  { label: '🎓', value: '🎓' },
+  { label: '🛠️', value: '🛠️' },
+  { label: '💼', value: '💼' },
+  { label: '📌', value: '📌' },
+  { label: '📝', value: '📝' },
+  { label: '⭐', value: '⭐' },
+]
+
+const ensureModuleRows = (key: ResumeModuleKey) => {
+  const mod = resume.value.modules[key] as any
+  if (!mod.rows) mod.rows = []
+  return mod.rows as ResumeModuleGridRow[]
+}
+
+const addGridRow = (key: ResumeModuleKey, cols: ResumeModuleGridRow['cols']) => {
+  const rows = ensureModuleRows(key)
+  const values: string[] = []
+  for (let i = 0; i < cols; i++) values.push('')
+  rows.push({ cols, values })
+}
+
+const removeGridRow = (key: ResumeModuleKey, rowIndex: number) => {
+  const rows = ensureModuleRows(key)
+  rows.splice(rowIndex, 1)
+}
+
+const clearModuleGrid = (key: ResumeModuleKey) => {
+  const rows = ensureModuleRows(key)
+  rows.splice(0, rows.length)
 }
 
 type AddableModuleKey = 'workYears' | 'position' | 'city' | 'salary' | 'custom'
@@ -567,23 +600,57 @@ const removePersonInfoField = (key: string) => {
                         <div v-show="element.expanded" class="module-panel">
 
                         <div class="module-panel__row">
-                          <el-input class="module-panel__input" :model-value="element.title" placeholder="模块标题">
+                          <el-input class="module-panel__input" v-model="resume.modules[element.key].title" placeholder="模块标题">
                             <template #prefix>
                               <el-icon><EditPen /></el-icon>
                             </template>
                           </el-input>
-                          <el-button class="module-panel__btn" plain>
-                            <el-icon style="margin-right: 6px"><Aim /></el-icon>
-                            选择图标
-                          </el-button>
+                          <el-popover placement="bottom" :width="180" trigger="click">
+                            <template #reference>
+                              <el-button class="module-panel__btn" plain>
+                                <span style="margin-right: 8px">{{ resume.modules[element.key].icon || '⭐' }}</span>
+                                选择图标
+                              </el-button>
+                            </template>
+
+                            <div class="module-icon-picker">
+                              <div
+                                v-for="opt in moduleIconOptions"
+                                :key="opt.value"
+                                class="module-icon-picker__item"
+                                @click="resume.modules[element.key].icon = opt.value"
+                              >
+                                {{ opt.label }}
+                              </div>
+                            </div>
+                          </el-popover>
                         </div>
 
-                        <div class="module-panel__empty">暂无内容，悬浮到此处添加行</div>
+                        <div v-if="(resume.modules[element.key].rows || []).length === 0" class="module-panel__empty">
+                          暂无内容，悬浮到此处添加行
+                        </div>
+                        <div v-else class="module-grid-editor">
+                          <div
+                            v-for="(row, rowIndex) in resume.modules[element.key].rows"
+                            :key="rowIndex"
+                            class="module-grid-row"
+                            :style="{ gridTemplateColumns: 'repeat(' + row.cols + ', 1fr)' }"
+                          >
+                            <el-input
+                              v-for="(_, colIndex) in row.cols"
+                              :key="colIndex"
+                              v-model="row.values[colIndex]"
+                              placeholder="请输入"
+                              size="small"
+                            />
+                            <el-icon class="module-grid-row__delete" @click="removeGridRow(element.key, rowIndex)"><Delete /></el-icon>
+                          </div>
+                        </div>
 
                         <div class="module-panel__footer">
                           <div class="module-panel__tags">
-                            <div v-for="n in 6" :key="n" class="module-tag">+ {{ n }}</div>
-                            <div class="module-tag">+ ▷</div>
+                            <div v-for="n in 6" :key="n" class="module-tag" @click="addGridRow(element.key, n as any)">+ {{ n }}</div>
+                            <div class="module-tag" @click="clearModuleGrid(element.key)">清空</div>
                           </div>
                           <div class="module-panel__actions">
                             <el-button type="danger" size="small" :icon="Delete" />
@@ -916,6 +983,51 @@ const removePersonInfoField = (key: string) => {
   display: inline-flex;
   align-items: center;
   user-select: none;
+  cursor: pointer;
+}
+
+.module-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.module-icon-picker__item {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  background: #f5f7fa;
+}
+
+.module-icon-picker__item:hover {
+  background: #e5e7eb;
+}
+
+.module-grid-editor {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.module-grid-row {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  align-items: center;
+}
+
+.module-grid-row__delete {
+  position: absolute;
+  right: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--el-color-danger);
+  cursor: pointer;
 }
 
 .module-collapse-enter-active,

@@ -102,30 +102,34 @@ export interface SelfIntro {
   text: string
 }
 
+export type ResumeModuleGridRow = {
+  cols: 1 | 2 | 3 | 4 | 5 | 6
+  values: string[]
+}
+
+export type ResumeModuleCommon = {
+  enabled: boolean
+  title: string
+  /** 模块标题左侧展示的图标（先用 emoji/字符做最小实现） */
+  icon?: string
+  /** 自定义网格行：点击 +1/+2... 生成 */
+  rows?: ResumeModuleGridRow[]
+}
+
 export interface ResumeModules {
-  education: {
-    enabled: boolean
-    title: string
+  education: ResumeModuleCommon & {
     items: EducationItem[]
   }
-  skills: {
-    enabled: boolean
-    title: string
+  skills: ResumeModuleCommon & {
     items: SkillsItem[]
   }
-  workExp: {
-    enabled: boolean
-    title: string
+  workExp: ResumeModuleCommon & {
     items: WorkExpItem[]
   }
-  projectExp: {
-    enabled: boolean
-    title: string
+  projectExp: ResumeModuleCommon & {
     items: ProjectExpItem[]
   }
-  selfIntro: {
-    enabled: boolean
-    title: string
+  selfIntro: ResumeModuleCommon & {
     value: SelfIntro
   }
 }

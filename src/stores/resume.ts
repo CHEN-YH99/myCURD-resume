@@ -62,6 +62,8 @@ const createDefaultResume = (): ResumeData => ({
     education: {
       enabled: true,
       title: '教育背景',
+      icon: '🎓',
+      rows: [],
       items: [
         {
           id: uid(),
@@ -76,6 +78,8 @@ const createDefaultResume = (): ResumeData => ({
     skills: {
       enabled: true,
       title: '专业技能',
+      icon: '🛠️',
+      rows: [],
       items: [
         {
           id: uid(),
@@ -88,6 +92,8 @@ const createDefaultResume = (): ResumeData => ({
     workExp: {
       enabled: true,
       title: '工作经历',
+      icon: '💼',
+      rows: [],
       items: [
         {
           id: uid(),
@@ -103,6 +109,8 @@ const createDefaultResume = (): ResumeData => ({
     projectExp: {
       enabled: true,
       title: '项目经历',
+      icon: '📌',
+      rows: [],
       items: [
         {
           id: uid(),
@@ -119,6 +127,8 @@ const createDefaultResume = (): ResumeData => ({
     selfIntro: {
       enabled: true,
       title: '自我评价',
+      icon: '📝',
+      rows: [],
       value: {
         enabled: true,
         text: '热爱技术，学习能力强，沟通协作良好。'

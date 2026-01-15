@@ -9,12 +9,24 @@ defineProps<{
 <template>
   <section class="r-block">
     <div class="r-block__title">
-      <span class="icon">🎓</span>
+      <span class="icon">{{ resume.modules.education.icon || '🎓' }}</span>
       <span>{{ resume.modules.education.title }}</span>
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.education.items.length > 0" class="r-block__list">
+    <div v-if="resume.modules.education.rows && resume.modules.education.rows.length > 0" class="r-split-container">
+      <div
+        v-for="(row, rowIndex) in resume.modules.education.rows"
+        :key="rowIndex"
+        class="r-split-row"
+      >
+        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+          {{ value }}
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="resume.modules.education.items.length > 0" class="r-block__list">
       <div v-for="item in resume.modules.education.items" :key="item.id" class="r-block__item">
         <div class="r-block__item-header">
           <div class="r-block__item-title">
@@ -29,6 +41,7 @@ defineProps<{
         </div>
       </div>
     </div>
+
     <div v-else class="r-block__empty">暂无教育背景</div>
   </section>
 </template>
@@ -92,6 +105,26 @@ defineProps<{
   font-size: 14px;
   text-align: center;
   padding: 20px 0;
+}
+
+.r-split-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.r-split-row {
+  display: flex;
+  gap: 10px;
+}
+
+.r-split-cell {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .icon {
