@@ -16,19 +16,7 @@ defineProps<{
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.education.rows && resume.modules.education.rows.length > 0" class="r-split-container">
-      <div
-        v-for="(row, rowIndex) in resume.modules.education.rows"
-        :key="rowIndex"
-        class="r-split-row"
-      >
-        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
-          {{ value }}
-        </div>
-      </div>
-    </div>
-
-    <div v-else-if="resume.modules.education.items.length > 0" class="r-block__list">
+    <div v-if="resume.modules.education.items.length > 0" class="r-block__list">
       <div v-for="item in resume.modules.education.items" :key="item.id" class="r-block__item">
         <div class="r-block__item-header">
           <div class="r-block__item-title">
@@ -41,10 +29,32 @@ defineProps<{
           <span class="sep">|</span>
           <span>{{ item.major }}</span>
         </div>
+
+        <div v-if="item.rows && item.rows.length > 0" class="r-split-container r-split-container--in-item">
+          <div v-for="(row, rowIndex) in item.rows" :key="rowIndex" class="r-split-row">
+            <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+              {{ value }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div v-else class="r-block__empty">暂无教育背景</div>
+    <div v-if="resume.modules.education.rows && resume.modules.education.rows.length > 0" class="r-split-container r-split-container--module">
+      <div
+        v-for="(row, rowIndex) in resume.modules.education.rows"
+        :key="rowIndex"
+        class="r-split-row"
+      >
+        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
+          {{ value }}
+        </div>
+      </div>
+    </div>
+
+    <div v-if="(!resume.modules.education.items || resume.modules.education.items.length === 0) && (!resume.modules.education.rows || resume.modules.education.rows.length === 0)" class="r-block__empty">
+      暂无教育背景
+    </div>
   </section>
 </template>
 
@@ -128,6 +138,10 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.r-split-container--in-item {
+  margin-top: 10px;
 }
 
 .r-split-row {

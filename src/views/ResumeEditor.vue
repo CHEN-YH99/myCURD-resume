@@ -665,6 +665,26 @@ const removePersonInfoField = (key: string) => {
                         </div>
 
                         <div v-if="element.key === 'education'" class="module-item__right module-item__right--with-add">
+                          <el-popover placement="bottom" :width="180" trigger="click">
+                            <template #reference>
+                              <el-button class="module-panel__btn" plain size="small" @click.stop>
+                                <span style="margin-right: 3px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
+                                选择图标
+                              </el-button>
+                            </template>
+
+                            <div class="module-icon-picker">
+                              <div
+                                v-for="opt in moduleIconOptions"
+                                :key="opt.value"
+                                class="module-icon-picker__item"
+                                @click="getResumeModuleRef(element.key).icon = opt.value"
+                              >
+                                {{ opt.label }}
+                              </div>
+                            </div>
+                          </el-popover>
+
                           <el-button
                             size="small"
                             type="primary"
@@ -702,6 +722,26 @@ const removePersonInfoField = (key: string) => {
                         </div>
 
                         <div v-else class="module-item__right">
+                          <el-popover placement="bottom" :width="180" trigger="click">
+                            <template #reference>
+                              <el-button class="module-panel__btn" plain size="small" @click.stop>
+                                <span style="margin-right: 8px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
+                                选择图标
+                              </el-button>
+                            </template>
+
+                            <div class="module-icon-picker">
+                              <div
+                                v-for="opt in moduleIconOptions"
+                                :key="opt.value"
+                                class="module-icon-picker__item"
+                                @click="getResumeModuleRef(element.key).icon = opt.value"
+                              >
+                                {{ opt.label }}
+                              </div>
+                            </div>
+                          </el-popover>
+
                           <el-icon
                             class="module-icon"
                             :class="{ 'is-rotated': element.expanded }"
@@ -806,36 +846,62 @@ const removePersonInfoField = (key: string) => {
                                     }"
                                   />
                                 </div>
+
+                                <div class="edu-item__grid">
+                                  <div class="edu-item__tags">
+                                    <div
+                                      v-for="n in 6"
+                                      :key="n"
+                                      class="module-tag"
+                                      @click="() => {
+                                        if (!Array.isArray((it as any).rows)) (it as any).rows = []
+                                        const values: string[] = []
+                                        for (let i = 0; i < n; i++) values.push('')
+                                        ;(it as any).rows.push({ cols: n, values })
+                                      }"
+                                    >
+                                      + {{ n }}
+                                    </div>
+                                    <div
+                                      class="module-tag"
+                                      @click="() => {
+                                        if (Array.isArray((it as any).rows)) (it as any).rows.splice(0, (it as any).rows.length)
+                                      }"
+                                    >
+                                      清空
+                                    </div>
+                                  </div>
+
+                                  <div v-if="Array.isArray((it as any).rows) && (it as any).rows.length > 0" class="module-grid-editor">
+                                    <div
+                                      v-for="(row, rowIndex) in ((it as any).rows as ResumeModuleGridRow[])"
+                                      :key="rowIndex"
+                                      class="module-grid-row"
+                                      :style="{ gridTemplateColumns: 'repeat(' + row.cols + ', 1fr)' }"
+                                    >
+                                      <el-input
+                                        v-for="(_, colIndex) in row.cols"
+                                        :key="colIndex"
+                                        v-model="row.values[colIndex]"
+                                        placeholder="请输入"
+                                        size="small"
+                                      />
+                                      <el-icon class="module-grid-row__delete" @click="(it as any).rows.splice(rowIndex, 1)"><Delete /></el-icon>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </template>
 
-                          <el-popover placement="bottom" :width="180" trigger="click">
-                            <template #reference>
-                              <el-button class="module-panel__btn" plain>
-                                <span style="margin-right: 8px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
-                                选择图标
-                              </el-button>
-                            </template>
 
-                            <div class="module-icon-picker">
-                              <div
-                                v-for="opt in moduleIconOptions"
-                                :key="opt.value"
-                                class="module-icon-picker__item"
-                                @click="getResumeModuleRef(element.key).icon = opt.value"
-                              >
-                                {{ opt.label }}
-                              </div>
-                            </div>
-                          </el-popover>
                         </div>
 
 
-                        <div v-if="(getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
+                        <div v-if="element.key !== 'education' && (getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
                           暂无内容，悬浮到此处添加行
                         </div>
-                        <div v-else class="module-grid-editor">
+                        <div v-if="element.key !== 'education'" class="module-grid-editor">
                           <div
                             v-for="(row, rowIndex) in (getResumeModuleRef(element.key).rows as ResumeModuleGridRow[])"
                             :key="rowIndex"
@@ -853,7 +919,7 @@ const removePersonInfoField = (key: string) => {
                           </div>
                         </div>
 
-                        <div class="module-panel__footer">
+                        <div v-if="element.key !== 'education'" class="module-panel__footer">
                           <div class="module-panel__tags">
                             <div v-for="n in 6" :key="n" class="module-tag" @click="addGridRow(element.key, n as any)">+ {{ n }}</div>
                             <div class="module-tag" @click="clearModuleGrid(element.key)">清空</div>
@@ -1192,6 +1258,18 @@ const removePersonInfoField = (key: string) => {
   cursor: pointer;
 }
 
+.edu-item__grid {
+  margin-top: 10px;
+}
+
+.edu-item__tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
 .module-panel__edu {
   grid-column: 1 / -1;
   display: flex;
@@ -1239,10 +1317,10 @@ const removePersonInfoField = (key: string) => {
 }
 
 .module-item__right--with-add {
-  gap: 8px;
+  gap: 6px;
 }
 
-.module-item__right--with-add :deep(.el-button) {
+.module-item__right--with-add :deep(.el-button.module-panel__edu-add-btn) {
   color: #fff !important;
 }
 

@@ -68,6 +68,8 @@ export interface EducationItem {
   degree: string
   start: string
   end: string
+  /** 每条教育经历自己的等分网格内容 */
+  rows?: ResumeModuleGridRow[]
 }
 
 export interface SkillsItem {
