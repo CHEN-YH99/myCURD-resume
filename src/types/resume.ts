@@ -134,5 +134,9 @@ export interface ResumeData {
   title: ResumeTitle
   jobIntention: JobIntention
   personInfo: PersonInfo
+
+  /** 控制简历模块在预览中的显示顺序 */
+  modulesOrder: ResumeModuleType[]
+
   modules: ResumeModules
 }

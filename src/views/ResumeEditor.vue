@@ -34,7 +34,7 @@ const resume = computed(() => store.resume.value)
 
 const totalModules = 6
 
-type ResumeModuleKey = 'education' | 'skills' | 'work'
+type ResumeModuleKey = 'education' | 'skills' | 'workExp' | 'projectExp' | 'selfIntro'
 
 type ResumeModule = {
   key: ResumeModuleKey
@@ -42,20 +42,30 @@ type ResumeModule = {
   expanded: boolean
 }
 
-const resumeModules = ref<ResumeModule[]>([
-  { key: 'education', title: '教育背景', expanded: false },
-  { key: 'skills', title: '专业技能', expanded: true },
-  { key: 'work', title: '工作经历', expanded: false },
-])
+const resumeModules = computed<ResumeModule[]>({
+  get: () =>
+    resume.value.modulesOrder
+      .filter((k: ResumeModuleKey) => resume.value.modules[k]?.enabled)
+      .map((k: ResumeModuleKey) => ({
+        key: k,
+        title: resume.value.modules[k].title,
+        expanded: expandedModuleKey.value === k,
+      })),
+  set: (list: ResumeModule[]) => {
+    resume.value.modulesOrder = list.map((m) => m.key)
+  },
+})
+
+const expandedModuleKey = ref<ResumeModuleKey | null>('skills')
 
 const toggleModuleExpanded = (key: ResumeModuleKey) => {
-  const m = resumeModules.value.find((x) => x.key === key)
-  if (!m) return
-  m.expanded = !m.expanded
+  expandedModuleKey.value = expandedModuleKey.value === key ? null : key
 }
 
 const removeResumeModule = (key: ResumeModuleKey) => {
-  resumeModules.value = resumeModules.value.filter((m) => m.key !== key)
+  const next = resume.value.modulesOrder.filter((k: ResumeModuleKey) => k !== key)
+  resume.value.modulesOrder = next
+  if (expandedModuleKey.value === key) expandedModuleKey.value = null
 }
 
 type AddableModuleKey = 'workYears' | 'position' | 'city' | 'salary' | 'custom'
@@ -523,7 +533,7 @@ const removePersonInfoField = (key: string) => {
             <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" :hide-delete="true" show-toggle @add="void 0">
               <div class="module-list">
                 <Draggable
-                  :list="resumeModules"
+                  v-model="resumeModules"
                   item-key="key"
                   handle=".module-drag-handle"
                   :animation="150"

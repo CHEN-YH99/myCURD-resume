@@ -57,6 +57,7 @@ const createDefaultResume = (): ResumeData => ({
     wechat: '0123456789',
     github: 'https://github.com/wzd'
   },
+  modulesOrder: ['education', 'skills', 'workExp', 'projectExp', 'selfIntro'],
   modules: {
     education: {
       enabled: true,

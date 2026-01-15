@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { ResumeData } from '@/types/resume'
+import { computed } from 'vue'
+import type { ResumeData, ResumeModuleType } from '@/types/resume'
 import HeaderSection from './section/Header.vue'
 import BaseInfoSection from './section/BaseInfo.vue'
 import EducationSection from './section/Education.vue'
@@ -8,9 +9,18 @@ import WorkExpSection from './section/WorkExp.vue'
 import ProjectExpSection from './section/ProjectExp.vue'
 import SelfIntroSection from './section/SelfIntro.vue'
 
-defineProps<{
+const props = defineProps<{
   resume: ResumeData
 }>()
+
+const orderedModules = computed<ResumeModuleType[]>(() => {
+  const base = props.resume.modulesOrder || []
+  const enabled = base.filter((k) => props.resume.modules[k]?.enabled)
+  const missing = (['education', 'skills', 'workExp', 'projectExp', 'selfIntro'] as ResumeModuleType[]).filter(
+    (k) => enabled.indexOf(k) === -1 && props.resume.modules[k]?.enabled,
+  )
+  return [...enabled, ...missing]
+})
 </script>
 
 <template>
@@ -18,11 +28,13 @@ defineProps<{
     <HeaderSection :resume="resume" />
 
     <div class="simple-resume__body">
-      <EducationSection v-if="resume.modules.education.enabled" :resume="resume" />
-      <SkillsSection v-if="resume.modules.skills.enabled" :resume="resume" />
-      <WorkExpSection v-if="resume.modules.workExp.enabled" :resume="resume" />
-      <ProjectExpSection v-if="resume.modules.projectExp.enabled" :resume="resume" />
-      <SelfIntroSection v-if="resume.modules.selfIntro.enabled" :resume="resume" />
+      <template v-for="k in orderedModules" :key="k">
+        <EducationSection v-if="k === 'education'" :resume="resume" />
+        <SkillsSection v-else-if="k === 'skills'" :resume="resume" />
+        <WorkExpSection v-else-if="k === 'workExp'" :resume="resume" />
+        <ProjectExpSection v-else-if="k === 'projectExp'" :resume="resume" />
+        <SelfIntroSection v-else-if="k === 'selfIntro'" :resume="resume" />
+      </template>
 
       <BaseInfoSection v-if="resume.personInfo.enabled" :resume="resume" />
     </div>
