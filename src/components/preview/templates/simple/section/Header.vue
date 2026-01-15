@@ -48,32 +48,42 @@ const showAvatar = computed(() => {
             'is-three-columns': resume.personInfo.preview?.columns === 3
           }"
         >
-          <span class="item">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">姓名：</span>
-            {{ resume.personInfo.name }}
-          </span>
+          <template v-for="key in resume.personInfo.order" :key="key">
+            <span v-if="key === 'name'" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">姓名：</span>
+              {{ resume.personInfo.name }}
+            </span>
 
-          <span class="item">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">性别/年龄：</span>
-            {{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁
-          </span>
+            <span v-else-if="key === 'gender'" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">性别/年龄：</span>
+              {{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁
+            </span>
 
-          <span class="item">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">电话：</span>
-            {{ resume.personInfo.phone }}
-          </span>
-          <span class="item">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">邮箱：</span>
-            {{ resume.personInfo.email }}
-          </span>
-          <span class="item">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">微信：</span>
-            {{ resume.personInfo.wechat }}
-          </span>
-          <a class="item link" :href="resume.personInfo.github" target="_blank" rel="noreferrer">
-            <span v-if="resume.personInfo.preview?.showLabels" class="label">Github：</span>
-            {{ resume.personInfo.github }}
-          </a>
+            <span v-else-if="key === 'age' && !(resume.personInfo.order || []).includes('gender')" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">性别/年龄：</span>
+              {{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁
+            </span>
+
+            <span v-else-if="key === 'phone'" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">电话：</span>
+              {{ resume.personInfo.phone }}
+            </span>
+
+            <span v-else-if="key === 'email'" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">邮箱：</span>
+              {{ resume.personInfo.email }}
+            </span>
+
+            <span v-else-if="key === 'wechat'" class="item">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">微信：</span>
+              {{ resume.personInfo.wechat }}
+            </span>
+
+            <a v-else-if="key === 'github'" class="item link" :href="resume.personInfo.github" target="_blank" rel="noreferrer">
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">Github：</span>
+              {{ resume.personInfo.github }}
+            </a>
+          </template>
         </div>
       </div>
 

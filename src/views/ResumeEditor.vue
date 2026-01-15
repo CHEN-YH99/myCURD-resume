@@ -296,7 +296,7 @@ const onExport = () => {
                     </el-button>
                   </el-tooltip>
 
-                  <el-dropdown trigger="click" @command="(c) => resume.personInfo.preview.columns = c">
+                  <el-dropdown trigger="click" @command="(c: number) => (resume.personInfo.preview.columns = c)">
                     <el-button size="small">
                       {{ resume.personInfo.preview.columns }}列 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
                     </el-button>
@@ -329,65 +329,101 @@ const onExport = () => {
                     </el-input>
                   </div>
                 </el-form-item>
-                <el-form-item label="姓名">
-                  <el-input v-model="resume.personInfo.name" placeholder="请输入姓名">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                <Draggable
+                  :list="resume.personInfo.order"
+                  :item-key="(k: string) => k"
+                  handle=".drag-handle"
+                  :animation="150"
+                  class="person-info-draggable"
+                  @update:list="(v: string[]) => (resume.personInfo.order = v)"
+                >
+                  <template #item="{ element: key }">
+                    <template v-if="key === 'name'">
+                      <el-form-item label="姓名">
+                        <el-input v-model="resume.personInfo.name" placeholder="请输入姓名">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
-                  </el-input>
-                </el-form-item>
-                <el-form-item label="性别" class="person-info-grid-item">
-                  <el-select v-model="resume.personInfo.gender" placeholder="请选择">
-                    <el-option label="男" value="男" />
-                    <el-option label="女" value="女" />
-                    <el-option label="未知" value="未知" />
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'gender'">
+                      <el-form-item label="性别" class="person-info-grid-item">
+                        <el-select v-model="resume.personInfo.gender" placeholder="请选择">
+                          <el-option label="男" value="男" />
+                          <el-option label="女" value="女" />
+                          <el-option label="未知" value="未知" />
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-select>
+                      </el-form-item>
                     </template>
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="年龄" class="person-info-grid-item">
-                  <el-input-number v-model="resume.personInfo.age" :min="0" :max="99">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'age'">
+                      <el-form-item label="年龄" class="person-info-grid-item">
+                        <el-input-number v-model="resume.personInfo.age" :min="0" :max="99">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input-number>
+                      </el-form-item>
                     </template>
-                  </el-input-number>
-                </el-form-item>
-                <el-form-item label="电话" class="person-info-grid-item">
-                  <el-input v-model="resume.personInfo.phone">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'phone'">
+                      <el-form-item label="电话" class="person-info-grid-item">
+                        <el-input v-model="resume.personInfo.phone">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
-                  </el-input>
-                </el-form-item>
-                <el-form-item label="邮箱" class="person-info-grid-item">
-                  <el-input v-model="resume.personInfo.email">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'email'">
+                      <el-form-item label="邮箱" class="person-info-grid-item">
+                        <el-input v-model="resume.personInfo.email">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
-                  </el-input>
-                </el-form-item>
-                <el-form-item label="微信" class="person-info-grid-item">
-                  <el-input v-model="resume.personInfo.wechat">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'wechat'">
+                      <el-form-item label="微信" class="person-info-grid-item">
+                        <el-input v-model="resume.personInfo.wechat">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
-                  </el-input>
-                </el-form-item>
-                <el-form-item label="Github" class="person-info-grid-item">
-                  <el-input v-model="resume.personInfo.github">
-                    <template #suffix>
-                      <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                      <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+
+                    <template v-else-if="key === 'github'">
+                      <el-form-item label="Github" class="person-info-grid-item">
+                        <el-input v-model="resume.personInfo.github">
+                          <template #suffix>
+                            <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
+                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                          </template>
+                        </el-input>
+                      </el-form-item>
                     </template>
-                  </el-input>
-                </el-form-item>
+
+                    <template v-else>
+                      <div style="display:none"></div>
+                    </template>
+                  </template>
+                </Draggable>
               </el-form>
             </SectionCard>
 
