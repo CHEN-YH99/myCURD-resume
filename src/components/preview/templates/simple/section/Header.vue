@@ -60,8 +60,8 @@ const showAvatar = computed(() => {
             </span>
 
             <span v-else-if="key === 'age' && !(resume.personInfo.order || []).includes('gender')" class="item">
-              <span v-if="resume.personInfo.preview?.showLabels" class="label">性别/年龄：</span>
-              {{ resume.personInfo.gender }} | {{ resume.personInfo.age }}岁
+              <span v-if="resume.personInfo.preview?.showLabels" class="label">年龄：</span>
+              {{ resume.personInfo.age }}岁
             </span>
 
             <span v-else-if="key === 'phone'" class="item">
@@ -84,7 +84,7 @@ const showAvatar = computed(() => {
               {{ resume.personInfo.github }}
             </a>
 
-            <span v-else-if="resume.personInfo.fields?.[key]?.enabled !== false" class="item">
+            <span v-else-if="!(key === 'age' && (resume.personInfo.order || []).includes('gender')) && resume.personInfo.fields?.[key]?.enabled !== false" class="item">
               <span v-if="resume.personInfo.preview?.showLabels" class="label">{{ resume.personInfo.fields?.[key]?.label }}：</span>
               {{ resume.personInfo.fields?.[key]?.value }}
             </span>
@@ -226,7 +226,6 @@ const showAvatar = computed(() => {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
-  background: #f3f4f6;
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13px;

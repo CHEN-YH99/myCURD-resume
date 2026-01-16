@@ -346,8 +346,16 @@ const addPersonInfoField = () => {
 }
 
 const removePersonInfoField = (key: string) => {
-  const builtIn = ['name', 'gender', 'age', 'phone', 'email', 'wechat', 'github']
-  if (builtIn.indexOf(key) !== -1) return
+  // 姓名 / 性别 / 年龄 不可删除
+  if (key === 'name' || key === 'gender' || key === 'age') return
+
+  // 可删除的内置字段：phone / email / wechat / github
+  if (key === 'phone' || key === 'email' || key === 'wechat' || key === 'github') {
+    resume.value.personInfo.order = resume.value.personInfo.order.filter((k: string) => k !== key)
+    return
+  }
+
+  // 自定义字段：完全移除
   delete (resume.value.personInfo.fields as any)[key]
   resume.value.personInfo.order = resume.value.personInfo.order.filter((k: string) => k !== key)
 }
@@ -631,7 +639,7 @@ const clearAvatar = () => {
                         <el-input v-model="resume.personInfo.name" placeholder="请输入姓名">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input>
                       </el-form-item>
@@ -645,7 +653,7 @@ const clearAvatar = () => {
                           <el-option label="未知" value="未知" />
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-select>
                       </el-form-item>
@@ -656,7 +664,7 @@ const clearAvatar = () => {
                         <el-input-number v-model="resume.personInfo.age" :min="0" :max="99">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input-number>
                       </el-form-item>
@@ -667,7 +675,7 @@ const clearAvatar = () => {
                         <el-input v-model="resume.personInfo.phone">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input>
                       </el-form-item>
@@ -678,7 +686,7 @@ const clearAvatar = () => {
                         <el-input v-model="resume.personInfo.email">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input>
                       </el-form-item>
@@ -689,7 +697,7 @@ const clearAvatar = () => {
                         <el-input v-model="resume.personInfo.wechat">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input>
                       </el-form-item>
@@ -700,7 +708,7 @@ const clearAvatar = () => {
                         <el-input v-model="resume.personInfo.github">
                           <template #suffix>
                             <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
-                            <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
+                            <el-icon class="suffix-action" @click.stop="removePersonInfoField(key)"><Delete /></el-icon>
                           </template>
                         </el-input>
                       </el-form-item>
@@ -1013,6 +1021,8 @@ const clearAvatar = () => {
                                         v-model="row.values[colIndex]"
                                         placeholder="请输入"
                                         size="small"
+                                        type="textarea"
+                                        :autosize="{ minRows: 1, maxRows: 8 }"
                                       />
                                       <el-icon class="module-grid-row__delete" @click="(itAny as any).rows.splice(rowIndex, 1)"><Delete /></el-icon>
                                     </div>

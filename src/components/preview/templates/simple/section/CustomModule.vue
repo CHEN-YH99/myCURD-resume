@@ -84,7 +84,6 @@ defineProps<{
   font-size: 14px;
   color: #111827;
   word-break: break-word;
-  white-space: pre-wrap;
 }
 
 .icon {
