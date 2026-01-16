@@ -17,38 +17,29 @@ defineProps<{
     </div>
     <div class="r-block__line" />
 
-    <div v-if="resume.modules.projectExp.rows && resume.modules.projectExp.rows.length > 0" class="r-grid-container">
-      <div
-        v-for="(row, rowIndex) in resume.modules.projectExp.rows"
-        :key="rowIndex"
-        class="r-split-row"
-      >
-        <div v-for="(value, colIndex) in row.values" :key="colIndex" class="r-split-cell">
-          {{ value }}
-        </div>
-      </div>
-    </div>
-
-    <div v-else-if="resume.modules.projectExp.items.length > 0" class="r-block__list">
+    <div v-if="resume.modules.projectExp.items.length > 0" class="r-block__list">
       <div v-for="(item, index) in resume.modules.projectExp.items" :key="index" class="r-block__item">
         <div class="r-block__item-header">
           <div class="r-block__item-title">
             <span class="r-block__item-name">{{ item.name }}</span>
             <span v-if="item.role" class="r-block__item-role">（{{ item.role }}）</span>
+
+            <div v-if="item.link" class="r-block__item-link">
+              <a :href="item.link" target="_blank" rel="noopener noreferrer" class="link">
+                {{ item.link }}
+              </a>
+            </div>
           </div>
           <div v-if="item.start || item.end" class="r-block__item-duration">
             {{ item.start }} - {{ item.end }}
           </div>
         </div>
-        
-        <div v-if="item.description" class="r-block__item-desc">
-          {{ item.description }}
-        </div>
-        
-        <div v-if="item.link" class="r-block__item-link">
-          <a :href="item.link" target="_blank" rel="noopener noreferrer" class="link">
-            {{ item.link }}
-          </a>
+
+        <div class="r-block__item-desc">
+          {{ (Array.isArray((item as any).rows) && (item as any).rows.length > 0)
+            ? (item as any).rows.flatMap((r: any) => (Array.isArray(r?.values) ? r.values : [])).join('\n')
+            : (item.description || '项目简介...')
+          }}
         </div>
       </div>
     </div>

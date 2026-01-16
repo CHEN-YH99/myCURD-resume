@@ -826,8 +826,6 @@ const removePersonInfoField = (key: string) => {
                                 class="edu-item"
                               >
                                 <div class="edu-item__row edu-item__row--top">
-                                  <el-input v-if="element.key === 'projectExp'" v-model="(itAny as any).name" placeholder="项目名称" />
-
                                   <el-select v-if="element.key === 'education'" v-model="(itAny as any).degree" placeholder="学历" style="width: 120px">
                                     <el-option label="博士" value="博士" />
                                     <el-option label="硕士" value="硕士" />
@@ -871,6 +869,11 @@ const removePersonInfoField = (key: string) => {
                                   <el-input v-model="(itAny as any).company" placeholder="公司名称" />
                                   <el-input v-model="(itAny as any).title" placeholder="职位" />
                                 </div>
+
+                                <div v-if="element.key === 'projectExp'" class="edu-item__row edu-item__row--project-name">
+                                  <el-input v-model="(itAny as any).name" placeholder="项目名称" />
+                                </div>
+
                                 <div class="edu-item__row">
                                   <div v-if="element.key === 'education'" class="edu-item__edu-extra">
                                     <el-input v-model="(itAny as any).school" placeholder="学校" />
@@ -934,10 +937,10 @@ const removePersonInfoField = (key: string) => {
                         </div>
 
 
-                        <div v-if="element.key !== 'education' && element.key !== 'workExp' && (getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
+                        <div v-if="element.key !== 'education' && element.key !== 'workExp' && element.key !== 'projectExp' && (getResumeModuleRef(element.key).rows || []).length === 0" class="module-panel__empty">
                           暂无内容，悬浮到此处添加行
                         </div>
-                        <div v-if="element.key !== 'education' && element.key !== 'workExp'" class="module-grid-editor">
+                        <div v-if="element.key !== 'education' && element.key !== 'workExp' && element.key !== 'projectExp'" class="module-grid-editor">
                           <div
                             v-for="(row, rowIndex) in (getResumeModuleRef(element.key).rows as ResumeModuleGridRow[])"
                             :key="rowIndex"
@@ -955,7 +958,7 @@ const removePersonInfoField = (key: string) => {
                           </div>
                         </div>
 
-                        <div v-if="element.key !== 'education' && element.key !== 'workExp'" class="module-panel__footer">
+                        <div v-if="element.key !== 'education' && element.key !== 'workExp' && element.key !== 'projectExp'" class="module-panel__footer">
                           <div class="module-panel__tags">
                             <div v-for="n in 6" :key="n" class="module-tag" @click="addGridRow(element.key, n as any)">+ {{ n }}</div>
                             <div class="module-tag" @click="clearModuleGrid(element.key)">清空</div>
