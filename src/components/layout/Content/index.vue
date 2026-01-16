@@ -3,10 +3,14 @@ import { Plus, Upload, View } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import resumeIcon from '@/assets/resume.svg'
+import { useResumeStore } from '@/stores/resume'
+import ResumeCardList from './resumeCardList.vue'
 
 const router = useRouter()
+const store = useResumeStore()
 
 const createResume = () => {
+  store.createNew()
   router.push('/editor')
 }
 
@@ -14,7 +18,9 @@ const primaryHoverColor = computed(() => '#0a91d9')
 </script>
 
 <template>
-  <div class="empty-state-container">
+  <ResumeCardList v-if="store.hasSaved.value" />
+
+  <div v-else class="empty-state-container">
     <div class="content-wrapper">
       <div class="icon-background">
         <img :src="resumeIcon" alt="resume icon" width="48" height="48" />

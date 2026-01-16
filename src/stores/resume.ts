@@ -2,6 +2,18 @@ import { computed, reactive } from 'vue'
 import type { ResumeData } from '@/types/resume'
 import defaultAvatar from '@/assets/defaultavatar.svg'
 
+type ResumeSummary = {
+  id: string
+  title: string
+  updatedAt: number
+}
+
+type ResumeRecord = ResumeSummary & {
+  data: ResumeData
+}
+
+const STORAGE_KEY = 'mycurd-resume:records'
+
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
 const createDefaultResume = (): ResumeData => ({
@@ -144,9 +156,27 @@ const createDefaultResume = (): ResumeData => ({
   }
 })
 
+const safeParseRecords = (): ResumeRecord[] => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed as ResumeRecord[]
+  } catch {
+    return []
+  }
+}
+
+const safeWriteRecords = (records: ResumeRecord[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+}
+
 const state = reactive({
   resume: createDefaultResume(),
-  mode: 'both' as 'edit' | 'preview' | 'both'
+  mode: 'both' as 'edit' | 'preview' | 'both',
+  currentId: '' as string,
+  records: safeParseRecords() as ResumeRecord[],
 })
 
 export const useResumeStore = () => {
@@ -155,16 +185,80 @@ export const useResumeStore = () => {
     get: () => state.mode,
     set: (v: 'edit' | 'preview' | 'both') => {
       state.mode = v
-    }
+    },
   })
 
-  const reset = () => {
+  const resumeSummaries = computed<ResumeSummary[]>(() =>
+    state.records
+      .slice()
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .map((r) => ({ id: r.id, title: r.title, updatedAt: r.updatedAt }))
+  )
+
+  const hasSaved = computed(() => resumeSummaries.value.length > 0)
+
+  const createNew = () => {
+    state.currentId = ''
     state.resume = createDefaultResume()
+  }
+
+  const saveCurrent = () => {
+    const now = Date.now()
+    const id = state.currentId || uid()
+    const title = String(state.resume.title?.title || '').trim() || '未命名简历'
+
+    const record: ResumeRecord = {
+      id,
+      title,
+      updatedAt: now,
+      data: JSON.parse(JSON.stringify(state.resume)) as ResumeData,
+    }
+
+    const idx = state.records.findIndex((r) => r.id === id)
+    if (idx >= 0) state.records[idx] = record
+    else state.records.unshift(record)
+
+    state.currentId = id
+    safeWriteRecords(state.records)
+
+    return { id, title }
+  }
+
+  const loadById = (id: string) => {
+    const found = state.records.find((r) => r.id === id)
+    if (!found) return false
+    state.currentId = id
+    state.resume = JSON.parse(JSON.stringify(found.data)) as ResumeData
+    return true
+  }
+
+  const removeById = (id: string) => {
+    const idx = state.records.findIndex((r) => r.id === id)
+    if (idx < 0) return false
+    state.records.splice(idx, 1)
+    safeWriteRecords(state.records)
+
+    if (state.currentId === id) {
+      state.currentId = ''
+      state.resume = createDefaultResume()
+    }
+
+    return true
+  }
+
+  const reset = () => {
+    createNew()
   }
 
   return {
     resume,
     mode,
-    reset
+    resumeSummaries,
+    hasSaved,
+    createNew,
+    saveCurrent,
+    loadById,
+    removeById,
+    reset,
   }
 }

@@ -299,7 +299,8 @@ const onBack = () => {
 }
 
 const onSave = () => {
-  void 0
+  const saved = store.saveCurrent()
+  ElMessage.success(`已保存：${saved.title}`)
 }
 
 const onExport = () => {
@@ -573,7 +574,7 @@ const clearAvatar = () => {
                     </el-button>
                   </el-tooltip>
 
-                  <el-dropdown trigger="click" @command="(c: number) => (resume.personInfo.preview.columns = c)">
+                  <el-dropdown trigger="click" @command="(c: number) => (resume.personInfo.preview.columns = c as 1 | 2 | 3)">
                     <el-button size="small"> {{ resume.personInfo.preview.columns }}列 <el-icon class="el-icon--right"><ArrowDown /></el-icon> </el-button>
                     <template #dropdown>
                       <el-dropdown-menu>

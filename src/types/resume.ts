@@ -11,6 +11,7 @@ export type ResumeModuleType =
 export interface ResumeTitle {
   title: string
   subtitle?: string
+  align?: 'left' | 'center' | 'right'
 }
 
 export interface JobIntention {

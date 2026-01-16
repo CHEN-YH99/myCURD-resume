@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import avatar from '@/assets/personal.svg'
+import { useResumeStore } from '@/stores/resume'
 
-const count = 0
+const store = useResumeStore()
+const count = computed(() => store.resumeSummaries.value.length)
 </script>
 
 <template>

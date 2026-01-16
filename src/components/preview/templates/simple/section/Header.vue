@@ -176,8 +176,11 @@ const showAvatar = computed(() => {
   .r-header__title {
     text-align: center;
   }
-  .r-header__meta,
+  .r-header__meta {
+    justify-content: center;
+  }
   .r-header__contact {
+    width: auto;
     justify-content: center;
   }
   .r-header__avatar {
@@ -246,6 +249,36 @@ const showAvatar = computed(() => {
   column-gap: 14px;
   row-gap: 6px;
   align-items: start;
+}
+
+.is-align-right {
+  .r-header__contact.is-two-columns,
+  .r-header__contact.is-three-columns {
+    justify-items: end;
+  }
+  .r-header__contact.is-two-columns .item,
+  .r-header__contact.is-three-columns .item {
+    text-align: right;
+  }
+}
+
+.is-align-center {
+  .r-header__contact.is-two-columns,
+  .r-header__contact.is-three-columns {
+    justify-items: center;
+  }
+
+  .r-header__contact.is-two-columns .item,
+  .r-header__contact.is-three-columns .item {
+    display: inline-flex;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .r-header__contact.is-two-columns .label,
+  .r-header__contact.is-three-columns .label {
+    text-align: left;
+  }
 }
 
 .item {
