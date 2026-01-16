@@ -1,9 +1,24 @@
 <script setup lang="ts">
-import type { ResumeData } from '@/types/resume'
+import type { ResumeData, ResumeModuleGridRow } from '@/types/resume'
 
 defineProps<{
   resume: ResumeData
 }>()
+
+const getItemHighlights = (item: any): string[] => {
+  const rows = item?.rows as undefined | ResumeModuleGridRow[]
+  if (Array.isArray(rows) && rows.length > 0) {
+    const out: string[] = []
+    for (const r of rows as any[]) {
+      const vs = (r as any)?.values
+      if (Array.isArray(vs)) out.push(...vs)
+    }
+    return out
+  }
+  const hs = item?.highlights
+  if (Array.isArray(hs)) return hs
+  return []
+}
 </script>
 
 <template>
@@ -17,9 +32,8 @@ defineProps<{
     <div class="r-block__line" />
 
     <div class="r-block__content-wrapper">
-      <span v-if="Array.isArray(resume.modules.workExp.time) && resume.modules.workExp.time.length === 2 && resume.modules.workExp.time[0] && resume.modules.workExp.time[1]" class="r-block__content-time">{{ resume.modules.workExp.time[0] }} - {{ resume.modules.workExp.time[1] }}</span>
 
-      <div v-if="resume.modules.workExp.rows && resume.modules.workExp.rows.length > 0" class="r-grid-container">
+      <div v-if="resume.modules.workExp.rows && resume.modules.workExp.rows.length > 0 && (!resume.modules.workExp.items || resume.modules.workExp.items.length === 0)" class="r-grid-container">
         <div
           v-for="(row, rowIndex) in resume.modules.workExp.rows"
           :key="rowIndex"
@@ -38,11 +52,11 @@ defineProps<{
               <span class="r-block__item-company">{{ item.company }}</span>
               <span class="r-block__item-role">{{ item.title }}</span>
             </div>
-            <div v-if="!resume.modules.workExp.time || !resume.modules.workExp.time[0]" class="r-block__item-duration">{{ item.start }} - {{ item.end }}</div>
+            <div class="r-block__item-duration">{{ item.start }} - {{ item.end }}</div>
           </div>
 
-        <div v-if="item.highlights?.length" class="r-block__highlights">
-          <div v-for="(h, idx) in item.highlights" :key="idx" class="r-block__highlight">- {{ h }}</div>
+        <div v-if="getItemHighlights(item).length" class="r-block__highlights">
+          <div v-for="(h, idx) in getItemHighlights(item)" :key="idx" class="r-block__highlight">- {{ h }}</div>
         </div>
       </div>
     </div>
