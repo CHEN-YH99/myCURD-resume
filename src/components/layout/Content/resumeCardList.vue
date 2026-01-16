@@ -41,7 +41,7 @@ const onDelete = async (id: string) => {
 
 <template>
   <div class="card-list">
-    <el-row :gutter="16">
+    <el-row :gutter="16" justify="start">
       <el-col v-for="it in items" :key="it.id" :xs="24" :sm="12" :md="12" :lg="6">
         <el-card class="resume-card" shadow="hover" body-style="padding: 16px">
           <div class="card-body">
@@ -65,7 +65,8 @@ const onDelete = async (id: string) => {
 
 <style scoped lang="scss">
 .card-list {
-  width: 100%;
+  width: 80%;
+  margin: 24px auto 0;
 }
 
 .resume-card {

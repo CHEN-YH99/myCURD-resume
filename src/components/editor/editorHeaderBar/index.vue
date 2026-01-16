@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Download, Document } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowDown, Download, Document } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 
 type Mode = 'edit' | 'preview' | 'both'
@@ -21,7 +21,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: Mode): void
   (e: 'back'): void
   (e: 'save'): void
-  (e: 'export'): void
+  (e: 'export', format: 'pdf' | 'word'): void
 }>()
 
 const innerMode = ref<Mode>(props.modelValue)
@@ -40,7 +40,7 @@ const onSegmentChange = (val: string | number | boolean) => {
 
 const onBack = () => emit('back')
 const onSave = () => emit('save')
-const onExport = () => emit('export')
+const onExport = (format: 'pdf' | 'word') => emit('export', format)
 </script>
 
 <template>
@@ -75,7 +75,19 @@ const onExport = () => emit('export')
 
     <div class="right">
       <el-button type="primary" round :icon="Document" @click="onSave">保存</el-button>
-      <el-button type="primary" round :icon="Download" @click="onExport">导出</el-button>
+
+      <el-dropdown trigger="click" @command="(c: any) => onExport(String(c) as any)">
+        <el-button type="primary" round :icon="Download">
+          导出
+          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="pdf">导出 PDF</el-dropdown-item>
+            <el-dropdown-item command="word">导出 Word</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
