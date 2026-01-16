@@ -664,7 +664,7 @@ const removePersonInfoField = (key: string) => {
                           <span class="module-item__title">{{ element.title }}</span>
                         </div>
 
-                        <div v-if="element.key === 'education' || element.key === 'workExp'" class="module-item__right module-item__right--with-add">
+                        <div v-if="element.key === 'education' || element.key === 'workExp' || element.key === 'projectExp'" class="module-item__right module-item__right--with-add">
                           <el-popover placement="bottom" :width="180" trigger="click">
                             <template #reference>
                               <el-button class="module-panel__btn" plain size="small" @click.stop>
@@ -684,6 +684,8 @@ const removePersonInfoField = (key: string) => {
                               </div>
                             </div>
                           </el-popover>
+
+
 
                           <el-button
                             v-if="element.key === 'education'"
@@ -708,7 +710,7 @@ const removePersonInfoField = (key: string) => {
                           </el-button>
 
                           <el-button
-                            v-else
+                            v-else-if="element.key === 'workExp'"
                             size="small"
                             type="primary"
                             plain
@@ -723,6 +725,29 @@ const removePersonInfoField = (key: string) => {
                                 start: Array.isArray(mod.time) ? (mod.time[0] || '') : '',
                                 end: Array.isArray(mod.time) ? (mod.time[1] || '') : '',
                                 highlights: [],
+                              })
+                            }"
+                          >
+                            添加经历
+                          </el-button>
+
+                          <el-button
+                            v-else-if="element.key === 'projectExp'"
+                            size="small"
+                            type="primary"
+                            plain
+                            class="module-panel__edu-add-btn"
+                            @click.stop="() => {
+                              const mod: any = getResumeModuleRef('projectExp')
+                              if (!Array.isArray(mod.items)) mod.items = []
+                              mod.items.push({
+                                id: uid(),
+                                name: '',
+                                link: '',
+                                role: '',
+                                start: Array.isArray(mod.time) ? (mod.time[0] || '') : '',
+                                end: Array.isArray(mod.time) ? (mod.time[1] || '') : '',
+                                description: '',
                               })
                             }"
                           >
@@ -785,51 +810,23 @@ const removePersonInfoField = (key: string) => {
                         <div v-show="element.expanded" class="module-panel">
 
                         <div class="module-panel__row">
-                          <el-input class="module-panel__input" v-model="getResumeModuleRef(element.key).title" placeholder="模块标题">
-                            <template #prefix>
-                              <el-icon><EditPen /></el-icon>
-                            </template>
-                          </el-input>
+                          <div class="module-panel__top">
+                            <el-input class="module-panel__input" v-model="getResumeModuleRef(element.key).title" placeholder="模块标题">
+                              <template #prefix>
+                                <el-icon><EditPen /></el-icon>
+                              </template>
+                            </el-input>
+                          </div>
 
-                          <el-date-picker
-                            v-model="getResumeModuleRef(element.key).time"
-                            type="monthrange"
-                            unlink-panels
-                            start-placeholder="开始"
-                            end-placeholder="结束"
-                            format="YYYY-MM"
-                            value-format="YYYY-MM"
-                            class="module-panel__date"
-                            @change="() => {
-                              const mod: any = getResumeModuleRef(element.key)
-                              const t = Array.isArray(mod?.time) ? mod.time : ['', '']
-                              const start = t?.[0] || ''
-                              const end = t?.[1] || ''
-
-                              // 教育经历/工作经历每条有独立时间，这里不做批量覆盖
-                              if (element.key === 'education' || element.key === 'workExp') return
-
-                              if (Array.isArray(mod?.items)) {
-                                for (const it of mod.items) {
-                                  if (it && typeof it === 'object') {
-                                    it.start = start
-                                    it.end = end
-                                  }
-                                }
-                              }
-                            }"
-                          />
-
-                          <template v-if="element.key === 'education' || element.key === 'workExp'">
+                          <template v-if="element.key === 'education' || element.key === 'workExp' || element.key === 'projectExp'">
                             <div class="module-panel__edu">
                               <div
                                 v-for="(itAny, idx) in ((getResumeModuleRef(element.key) as any).items || [])"
                                 :key="(itAny as any).id || idx"
                                 class="edu-item"
                               >
-                                <div class="edu-item__row">
-                                  <el-input v-if="element.key === 'education'" v-model="(itAny as any).school" placeholder="学校" />
-                                  <el-input v-if="element.key === 'workExp'" v-model="(itAny as any).company" placeholder="公司名称" />
+                                <div class="edu-item__row edu-item__row--top">
+                                  <el-input v-if="element.key === 'projectExp'" v-model="(itAny as any).name" placeholder="项目名称" />
 
                                   <el-select v-if="element.key === 'education'" v-model="(itAny as any).degree" placeholder="学历" style="width: 120px">
                                     <el-option label="博士" value="博士" />
@@ -839,23 +836,6 @@ const removePersonInfoField = (key: string) => {
                                     <el-option label="高中" value="高中" />
                                     <el-option label="其他" value="其他" />
                                   </el-select>
-                                  <el-input v-if="element.key === 'workExp'" v-model="(itAny as any).title" placeholder="职位" />
-
-                                  <el-button
-                                    size="small"
-                                    type="danger"
-                                    plain
-                                    @click="() => {
-                                      const mod: any = getResumeModuleRef(element.key)
-                                      if (!Array.isArray(mod.items)) return
-                                      mod.items.splice(idx, 1)
-                                    }"
-                                  >
-                                    删除
-                                  </el-button>
-                                </div>
-                                <div class="edu-item__row">
-                                  <el-input v-if="element.key === 'education'" v-model="(itAny as any).major" placeholder="专业" />
 
                                   <el-date-picker
                                     :model-value="[(itAny as any).start, (itAny as any).end]"
@@ -872,6 +852,35 @@ const removePersonInfoField = (key: string) => {
                                       ;(itAny as any).end = arr?.[1] || ''
                                     }"
                                   />
+
+                                  <el-button
+                                    size="small"
+                                    type="danger"
+                                    plain
+                                    @click="() => {
+                                      const mod: any = getResumeModuleRef(element.key)
+                                      if (!Array.isArray(mod.items)) return
+                                      mod.items.splice(idx, 1)
+                                    }"
+                                  >
+                                    删除
+                                  </el-button>
+                                </div>
+
+                                <div v-if="element.key === 'workExp'" class="edu-item__row edu-item__row--work">
+                                  <el-input v-model="(itAny as any).company" placeholder="公司名称" />
+                                  <el-input v-model="(itAny as any).title" placeholder="职位" />
+                                </div>
+                                <div class="edu-item__row">
+                                  <div v-if="element.key === 'education'" class="edu-item__edu-extra">
+                                    <el-input v-model="(itAny as any).school" placeholder="学校" />
+                                    <el-input v-model="(itAny as any).major" placeholder="专业" />
+                                  </div>
+
+                                  <div v-if="element.key === 'projectExp'" class="project-exp-extra">
+                                    <el-input v-model="(itAny as any).role" placeholder="项目职位" />
+                                    <el-input v-model="(itAny as any).link" placeholder="项目链接" />
+                                  </div>
                                 </div>
 
                                 <div class="edu-item__grid">
@@ -1242,9 +1251,11 @@ const removePersonInfoField = (key: string) => {
 }
 
 .module-panel__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: block;
+}
+
+.module-panel__top {
+  display: block;
 }
 
 .module-panel__empty {
@@ -1332,6 +1343,34 @@ const removePersonInfoField = (key: string) => {
 }
 
 .edu-item__date :deep(.el-input) {
+  width: 100%;
+}
+
+.project-exp-extra {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.project-exp-extra :deep(.el-input) {
+  width: 100%;
+}
+
+.edu-item__edu-extra {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.edu-item__edu-extra :deep(.el-select) {
+  width: 100%;
+}
+
+.edu-item__edu-extra :deep(.el-input) {
   width: 100%;
 }
 
