@@ -1,5 +1,6 @@
 import { computed, reactive } from 'vue'
 import type { ResumeData } from '@/types/resume'
+import defaultAvatar from '@/assets/defaultavatar.svg'
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
@@ -36,7 +37,7 @@ const createDefaultResume = (): ResumeData => ({
       showLabels: true
     },
 
-    avatarUrl: '/default-avatar.jpg',
+    avatarUrl: defaultAvatar,
 
     fields: {
       name: { enabled: true, label: '姓名', value: '' },

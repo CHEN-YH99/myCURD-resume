@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { ResumeModuleGridRow } from '@/types/resume'
 import Draggable from 'vuedraggable'
 import type { Component } from 'vue'
@@ -24,6 +25,7 @@ import {
   View,
 } from '@element-plus/icons-vue'
 import { useResumeStore } from '@/stores/resume'
+import defaultAvatar from '@/assets/defaultavatar.svg'
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
@@ -42,6 +44,28 @@ type ResumeModule = {
   title: string
   expanded: boolean
 }
+
+const resumeModulesEnabled = computed<boolean>({
+  get: () => {
+    const keys = resume.value.modulesOrder as ResumeModuleKey[]
+    // 认为“简历模块”整体启用：只要存在任意模块 enabled
+    return keys.some((k) => {
+      const mod = (resume.value.modules as any)[k] || (resume.value.modules.custom as any)?.[k]
+      return !!mod?.enabled
+    })
+  },
+  set: (v: boolean) => {
+    const keys = resume.value.modulesOrder as ResumeModuleKey[]
+    keys.forEach((k) => {
+      const mod = (resume.value.modules as any)[k] || (resume.value.modules.custom as any)?.[k]
+      if (mod) mod.enabled = v
+    })
+
+    if (!v) {
+      expandedModuleKey.value = null
+    }
+  },
+})
 
 const resumeModules = computed<ResumeModule[]>({
   get: () =>
@@ -327,6 +351,51 @@ const removePersonInfoField = (key: string) => {
   delete (resume.value.personInfo.fields as any)[key]
   resume.value.personInfo.order = resume.value.personInfo.order.filter((k: string) => k !== key)
 }
+
+const avatarUploading = ref(false)
+
+const beforeAvatarUpload = (file: File) => {
+  const type = String((file as any)?.type || '')
+  const name = String((file as any)?.name || '').toLowerCase()
+  const isImage = type.indexOf('image/') === 0 || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name)
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件')
+    return false
+  }
+
+  const maxSizeMB = 2
+  const isLtMax = file.size / 1024 / 1024 < maxSizeMB
+  if (!isLtMax) {
+    ElMessage.error(`图片大小不能超过 ${maxSizeMB}MB`)
+    return false
+  }
+
+  return true
+}
+
+const onAvatarChange = (_uploadFile: any, uploadFiles?: any[]) => {
+  const file = Array.isArray(uploadFiles) ? uploadFiles[uploadFiles.length - 1] : _uploadFile
+  const raw: File | undefined = file?.raw
+  if (!raw) return
+
+  avatarUploading.value = true
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    resume.value.personInfo.avatarUrl = String(reader.result || '')
+    avatarUploading.value = false
+    ElMessage.success('头像已更新')
+  }
+  reader.onerror = () => {
+    avatarUploading.value = false
+    ElMessage.error('头像读取失败')
+  }
+  reader.readAsDataURL(raw)
+}
+
+const clearAvatar = () => {
+  resume.value.personInfo.avatarUrl = defaultAvatar
+}
 </script>
 
 <template>
@@ -515,11 +584,31 @@ const removePersonInfoField = (key: string) => {
                 </el-button-group>
               </template>
               <el-form label-width="80px">
-                <el-form-item label="头像" class="person-avatar-form-item">
+                <el-form-item class="person-avatar-form-item">
                   <div class="person-avatar-form-item__content">
-                    <div class="person-avatar-placeholder" aria-hidden="true"></div>
+                    <div
+                      v-if="!resume.personInfo.avatarUrl"
+                      class="person-avatar-placeholder"
+                      aria-hidden="true"
+                    ></div>
+                    <div v-else class="person-avatar-preview" aria-hidden="true">
+                      <img class="person-avatar-preview__img" :src="resume.personInfo.avatarUrl" alt="avatar" />
+                    </div>
 
-                    <el-input v-model="resume.personInfo.avatarUrl" placeholder="头像地址占位">
+                    <el-upload
+                      class="avatar-uploader"
+                      action="#"
+                      :auto-upload="false"
+                      :show-file-list="false"
+                      :before-upload="beforeAvatarUpload"
+                      :on-change="onAvatarChange"
+                      accept="image/*"
+                    >
+                      <el-button class="custom-add-btn" size="small" type="primary" plain :loading="avatarUploading">上传头像</el-button>
+                      <el-button size="small" plain :disabled="resume.personInfo.avatarUrl === defaultAvatar" @click.stop="clearAvatar">清除</el-button>
+                    </el-upload>
+
+                    <el-input v-model="resume.personInfo.avatarUrl" placeholder="头像URL（可粘贴或上传生成）">
                       <template #suffix>
                         <el-icon class="suffix-action drag-handle"><Rank /></el-icon>
                         <el-icon class="suffix-action is-disabled"><Delete /></el-icon>
@@ -648,7 +737,7 @@ const removePersonInfoField = (key: string) => {
               </el-form>
             </SectionCard>
 
-            <SectionCard :icon="Menu" title="简历模块" addable add-text="添加模块" :hide-delete="true" show-toggle @add="addCustomResumeModule">
+            <SectionCard :icon="Menu" title="简历模块" v-model="resumeModulesEnabled" addable add-text="添加模块" :hide-delete="true" show-toggle toggle-text="启用" @add="addCustomResumeModule">
               <div class="module-list">
                 <Draggable
                   v-model="resumeModules"
@@ -1591,5 +1680,27 @@ const removePersonInfoField = (key: string) => {
   border-radius: 10px;
   border: 1px dashed var(--el-border-color);
   background: var(--el-fill-color-lighter);
+}
+
+.person-avatar-preview {
+  position: absolute;
+  left: -64px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-top: 6px;
+
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-avatar-radius, 10px);
+  overflow: hidden;
+  border: 1px solid var(--el-border-color);
+  background: #fff;
+}
+
+.person-avatar-preview__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 </style>
