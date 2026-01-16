@@ -21,6 +21,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: Mode): void
   (e: 'back'): void
   (e: 'save'): void
+  (e: 'draft', action: 'save' | 'load' | 'clear'): void
   (e: 'export', format: 'pdf' | 'word'): void
 }>()
 
@@ -40,6 +41,7 @@ const onSegmentChange = (val: string | number | boolean) => {
 
 const onBack = () => emit('back')
 const onSave = () => emit('save')
+const onDraft = (action: 'save' | 'load' | 'clear') => emit('draft', action)
 const onExport = (format: 'pdf' | 'word') => emit('export', format)
 </script>
 
@@ -75,6 +77,20 @@ const onExport = (format: 'pdf' | 'word') => emit('export', format)
 
     <div class="right">
       <el-button type="primary" round :icon="Document" @click="onSave">保存</el-button>
+
+      <el-dropdown trigger="click" @command="(c: any) => onDraft(String(c) as any)">
+        <el-button type="primary" round :icon="Document" @click.prevent>
+          草稿
+          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="load">加载草稿</el-dropdown-item>
+            <el-dropdown-item command="save">立即存草稿</el-dropdown-item>
+            <el-dropdown-item command="clear" divided>清空草稿</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
 
       <el-dropdown trigger="click" @command="(c: any) => onExport(String(c) as any)">
         <el-button type="primary" round :icon="Download">

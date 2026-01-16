@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ResumeModuleGridRow } from '@/types/resume'
 import Draggable from 'vuedraggable'
 import type { Component } from 'vue'
@@ -298,8 +298,111 @@ const onBack = () => {
   router.push('/')
 }
 
+const DRAFT_THROTTLE_MS = 1500
+const draftDirty = ref(false)
+let draftTimer: number | null = null
+let skipDraftOnce = false
+
+const scheduleSaveDraft = () => {
+  if (skipDraftOnce) return
+  draftDirty.value = true
+  if (draftTimer) window.clearTimeout(draftTimer)
+  draftTimer = window.setTimeout(() => {
+    try {
+      store.saveDraft()
+      draftDirty.value = false
+    } catch {
+      // ignore
+    }
+  }, DRAFT_THROTTLE_MS)
+}
+
+const onDraft = async (action: 'save' | 'load' | 'clear') => {
+  if (action === 'save') {
+    try {
+      store.saveDraft()
+      draftDirty.value = false
+      ElMessage.success('已保存到草稿')
+    } catch {
+      ElMessage.error('草稿保存失败')
+    }
+    return
+  }
+
+  if (action === 'clear') {
+    store.clearDraft()
+    draftDirty.value = false
+    ElMessage.success('草稿已清空')
+    return
+  }
+
+  // load
+  if (!store.hasDraft.value) {
+    ElMessage.info('暂无草稿')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm('将用草稿内容覆盖当前编辑内容，是否继续？', '加载草稿', {
+      type: 'warning',
+      confirmButtonText: '加载',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+
+  skipDraftOnce = true
+  try {
+    const ok = store.loadDraft()
+    if (ok) {
+      ElMessage.success('草稿已加载')
+    } else {
+      ElMessage.error('草稿加载失败')
+    }
+  } finally {
+    window.setTimeout(() => {
+      skipDraftOnce = false
+    }, 0)
+  }
+}
+
+onMounted(async () => {
+  if (!store.hasDraft.value) return
+
+  try {
+    await ElMessageBox.confirm('检测到未保存的草稿，是否恢复？', '草稿', {
+      type: 'info',
+      confirmButtonText: '恢复',
+      cancelButtonText: '忽略',
+      distinguishCancelAndClose: true,
+    })
+  } catch {
+    return
+  }
+
+  skipDraftOnce = true
+  try {
+    store.loadDraft()
+    draftDirty.value = false
+  } finally {
+    window.setTimeout(() => {
+      skipDraftOnce = false
+    }, 0)
+  }
+})
+
+watch(
+  () => resume.value,
+  () => {
+    scheduleSaveDraft()
+  },
+  { deep: true }
+)
+
 const onSave = () => {
   const saved = store.saveCurrent()
+  store.clearDraft()
   ElMessage.success(`已保存：${saved.title}`)
 }
 
@@ -448,7 +551,7 @@ const clearAvatar = () => {
 
 <template>
   <div class="resume-editor-page">
-    <EditorHeaderBar v-model="mode" @back="onBack" @save="onSave" @export="doExport" />
+    <EditorHeaderBar v-model="mode" @back="onBack" @save="onSave" @draft="onDraft" @export="doExport" />
 
     <main class="page-body">
       <div class="editor-layout" :class="{ 'single-mode': mode !== 'both' }">

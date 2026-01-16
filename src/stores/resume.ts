@@ -13,6 +13,7 @@ type ResumeRecord = ResumeSummary & {
 }
 
 const STORAGE_KEY = 'mycurd-resume:records'
+const DRAFT_KEY = 'mycurd-resume:draft'
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
@@ -172,6 +173,33 @@ const safeWriteRecords = (records: ResumeRecord[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
 }
 
+type DraftPayload = {
+  updatedAt: number
+  currentId: string
+  data: ResumeData
+}
+
+const safeReadDraft = (): DraftPayload | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as DraftPayload
+    if (!parsed || typeof parsed !== 'object') return null
+    if (!parsed.data) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+const safeWriteDraft = (payload: DraftPayload) => {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(payload))
+}
+
+const clearDraftStorage = () => {
+  localStorage.removeItem(DRAFT_KEY)
+}
+
 const state = reactive({
   resume: createDefaultResume(),
   mode: 'both' as 'edit' | 'preview' | 'both',
@@ -250,6 +278,36 @@ export const useResumeStore = () => {
     createNew()
   }
 
+  const saveDraft = () => {
+    const payload: DraftPayload = {
+      updatedAt: Date.now(),
+      currentId: state.currentId,
+      data: JSON.parse(JSON.stringify(state.resume)) as ResumeData,
+    }
+    safeWriteDraft(payload)
+    return payload
+  }
+
+  const loadDraft = () => {
+    const d = safeReadDraft()
+    if (!d) return false
+    state.currentId = d.currentId || ''
+    state.resume = JSON.parse(JSON.stringify(d.data)) as ResumeData
+    return true
+  }
+
+  const hasDraft = computed(() => !!safeReadDraft())
+
+  const clearDraft = () => {
+    clearDraftStorage()
+  }
+
+  const getDraftMeta = computed(() => {
+    const d = safeReadDraft()
+    if (!d) return null
+    return { updatedAt: d.updatedAt, currentId: d.currentId }
+  })
+
   return {
     resume,
     mode,
@@ -260,5 +318,11 @@ export const useResumeStore = () => {
     loadById,
     removeById,
     reset,
+
+    hasDraft,
+    getDraftMeta,
+    saveDraft,
+    loadDraft,
+    clearDraft,
   }
 }
