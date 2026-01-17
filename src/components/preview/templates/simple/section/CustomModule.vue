@@ -10,7 +10,7 @@ defineProps<{
   <section class="r-block">
     <div class="r-block__title">
       <div class="r-block__title-left">
-        <span class="icon">{{ module.icon || '⭐' }}</span>
+        <span v-if="module.icon" class="icon">{{ module.icon }}</span>
         <span>{{ module.title }}</span>
       </div>
       <span v-if="Array.isArray(module.time) && module.time.length === 2 && module.time[0] && module.time[1]" class="r-block__time">{{ module.time[0] }} - {{ module.time[1] }}</span>

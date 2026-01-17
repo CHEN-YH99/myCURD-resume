@@ -10,7 +10,7 @@ defineProps<{
   <section class="r-block">
     <div class="r-block__title">
       <div class="r-block__title-left">
-        <span class="icon">{{ resume.modules.selfIntro.icon || '🧾' }}</span>
+        <span v-if="resume.modules.selfIntro.icon" class="icon">{{ resume.modules.selfIntro.icon }}</span>
         <span>{{ resume.modules.selfIntro.title }}</span>
       </div>
       <span class="r-block__time-placeholder" aria-hidden="true"></span>

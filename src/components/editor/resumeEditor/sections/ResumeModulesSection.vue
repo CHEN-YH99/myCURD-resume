@@ -95,6 +95,12 @@ const moduleIconOptions: { label: string; value: string }[] = [
   { label: '🎯', value: '🎯' }, { label: '🤝', value: '🤝' }, { label: '🌟', value: '🌟' },
 ]
 
+const toggleModuleIcon = (key: ResumeModuleKey, icon: string) => {
+  const mod: any = getResumeModuleRef(key)
+  const current = mod?.icon || ''
+  mod.icon = current === icon ? '' : icon
+}
+
 const ensureModuleRows = (key: ResumeModuleKey) => {
   const mod = getResumeModuleRef(key) as any
   if (!mod.rows) mod.rows = []
@@ -156,10 +162,16 @@ const addCustomResumeModule = () => {
               </div>
 
               <div v-if="element.key === 'education' || element.key === 'workExp' || element.key === 'projectExp'" class="module-item__right module-item__right--with-add">
-                <el-popover placement="bottom" :width="180" trigger="click">
+                <el-popover placement="bottom" :width="240" trigger="click">
                   <template #reference>
                     <el-button class="module-panel__btn" plain size="small" @click.stop>
-                      <span style="margin-right: 3px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
+                      <span
+                        v-if="getResumeModuleRef(element.key).icon"
+                        class="module-panel__btn-icon"
+                        style="margin-right: 3px"
+                      >
+                        {{ getResumeModuleRef(element.key).icon }}
+                      </span>
                       选择图标
                     </el-button>
                   </template>
@@ -169,7 +181,10 @@ const addCustomResumeModule = () => {
                       v-for="opt in moduleIconOptions"
                       :key="opt.value"
                       class="module-icon-picker__item"
-                      @click="getResumeModuleRef(element.key).icon = opt.value"
+                      :class="{ 'is-selected': (getResumeModuleRef(element.key).icon || '') === opt.value }"
+                      :aria-selected="(getResumeModuleRef(element.key).icon || '') === opt.value"
+                      role="option"
+                      @click="toggleModuleIcon(element.key, opt.value)"
                     >
                       {{ opt.label }}
                     </div>
@@ -259,10 +274,16 @@ const addCustomResumeModule = () => {
               </div>
 
               <div v-else class="module-item__right">
-                <el-popover placement="bottom" :width="180" trigger="click">
+                <el-popover placement="bottom" :width="240" trigger="click">
                   <template #reference>
                     <el-button class="module-panel__btn" plain size="small" @click.stop>
-                      <span style="margin-right: 8px">{{ getResumeModuleRef(element.key).icon || '⭐' }}</span>
+                      <span
+                        v-if="getResumeModuleRef(element.key).icon"
+                        class="module-panel__btn-icon"
+                        style="margin-right: 8px"
+                      >
+                        {{ getResumeModuleRef(element.key).icon }}
+                      </span>
                       选择图标
                     </el-button>
                   </template>
@@ -272,7 +293,10 @@ const addCustomResumeModule = () => {
                       v-for="opt in moduleIconOptions"
                       :key="opt.value"
                       class="module-icon-picker__item"
-                      @click="getResumeModuleRef(element.key).icon = opt.value"
+                      :class="{ 'is-selected': (getResumeModuleRef(element.key).icon || '') === opt.value }"
+                      :aria-selected="(getResumeModuleRef(element.key).icon || '') === opt.value"
+                      role="option"
+                      @click="toggleModuleIcon(element.key, opt.value)"
                     >
                       {{ opt.label }}
                     </div>
@@ -670,6 +694,17 @@ const addCustomResumeModule = () => {
   margin-right: 4px;
 }
 
+.module-panel__btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  flex: 0 0 18px;
+  overflow: hidden;
+}
+
 .module-panel__edu-add-btn {
   color: #fff !important;
 }
@@ -691,6 +726,8 @@ const addCustomResumeModule = () => {
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   padding: 8px;
+  padding-right: 16px;
+  box-sizing: border-box;
 }
 
 .module-icon-picker__item {
@@ -702,11 +739,18 @@ const addCustomResumeModule = () => {
   cursor: pointer;
   user-select: none;
   background: #f5f7fa;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+  border: 1px solid transparent;
 }
 
 .module-icon-picker__item:hover {
   background: #e5e7eb;
+}
+
+.module-icon-picker__item.is-selected {
+  background: rgba(64, 158, 255, 0.12);
+  border-color: rgba(64, 158, 255, 0.65);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.18);
 }
 
 .module-grid-editor {

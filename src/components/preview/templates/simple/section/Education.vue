@@ -10,7 +10,7 @@ defineProps<{
   <section class="r-block">
     <div class="r-block__title">
       <div class="r-block__title-left">
-        <span class="icon">{{ resume.modules.education.icon || '🎓' }}</span>
+        <span v-if="resume.modules.education.icon" class="icon">{{ resume.modules.education.icon }}</span>
         <span>{{ resume.modules.education.title }}</span>
       </div>
     </div>

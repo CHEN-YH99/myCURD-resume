@@ -25,7 +25,7 @@ const getItemHighlights = (item: any): string[] => {
   <section class="r-block">
     <div class="r-block__title">
       <div class="r-block__title-left">
-        <span class="icon">{{ resume.modules.workExp.icon || '💼' }}</span>
+        <span v-if="resume.modules.workExp.icon" class="icon">{{ resume.modules.workExp.icon }}</span>
         <span>{{ resume.modules.workExp.title }}</span>
       </div>
     </div>
