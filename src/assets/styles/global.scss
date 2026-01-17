@@ -108,3 +108,15 @@ body {
     display: none !important;
   }
 }
+
+.preview-paper,
+.preview-paper * {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.preview-paper .r-block,
+.preview-paper .r-block__item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
