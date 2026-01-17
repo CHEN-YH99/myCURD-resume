@@ -1,21 +1,10 @@
 import { computed, reactive } from 'vue'
 import type { ResumeData } from '@/types/resume'
 import defaultAvatar from '@/assets/defaultavatar.svg'
-
-type ResumeSummary = {
-  id: string
-  title: string
-  updatedAt: number
-}
-
-type ResumeRecord = ResumeSummary & {
-  data: ResumeData
-}
-
-const STORAGE_KEY = 'mycurd-resume:records'
-const DRAFT_KEY = 'mycurd-resume:draft'
-
-const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
+import { resumeStorage, type DraftPayload, type ResumeRecord, type ResumeSummary } from '@/services/resumeStorage'
+import { resumeImportExport } from '@/services/resumeImportExport'
+import { saveAs } from 'file-saver'
+import { uid, sanitizeFileName } from '@/utils/format'
 
 const createDefaultResume = (): ResumeData => ({
   title: {
@@ -157,47 +146,20 @@ const createDefaultResume = (): ResumeData => ({
   }
 })
 
-const safeParseRecords = (): ResumeRecord[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed as ResumeRecord[]
-  } catch {
-    return []
-  }
-}
+const safeParseRecords = (): ResumeRecord[] => resumeStorage.readRecords()
 
 const safeWriteRecords = (records: ResumeRecord[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+  resumeStorage.writeRecords(records)
 }
 
-type DraftPayload = {
-  updatedAt: number
-  currentId: string
-  data: ResumeData
-}
-
-const safeReadDraft = (): DraftPayload | null => {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as DraftPayload
-    if (!parsed || typeof parsed !== 'object') return null
-    if (!parsed.data) return null
-    return parsed
-  } catch {
-    return null
-  }
-}
+const safeReadDraft = (): DraftPayload | null => resumeStorage.readDraft()
 
 const safeWriteDraft = (payload: DraftPayload) => {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(payload))
+  resumeStorage.writeDraft(payload)
 }
 
 const clearDraftStorage = () => {
-  localStorage.removeItem(DRAFT_KEY)
+  resumeStorage.clearDraft()
 }
 
 const state = reactive({
@@ -308,6 +270,45 @@ export const useResumeStore = () => {
     return { updatedAt: d.updatedAt, currentId: d.currentId }
   })
 
+  const importResumeFromJsonFile = async (file: File) => {
+    const { resume: imported } = await resumeImportExport.importFromJsonFile(file, createDefaultResume)
+
+    const now = Date.now()
+    const id = uid()
+    const title = String(imported.title?.title || '').trim() || '未命名简历'
+
+    const record: ResumeRecord = {
+      id,
+      title,
+      updatedAt: now,
+      data: JSON.parse(JSON.stringify(imported)) as ResumeData,
+    }
+
+    state.records.unshift(record)
+    safeWriteRecords(state.records)
+
+    state.currentId = id
+    state.resume = JSON.parse(JSON.stringify(imported)) as ResumeData
+
+    return { id, title }
+  }
+
+  const exportResumeRecordToJsonFile = (id?: string) => {
+    const targetId = id || state.currentId
+    if (!targetId) return false
+
+    const found = state.records.find((r) => r.id === targetId)
+    const data = found?.data || state.resume
+
+    const title = String((data as any)?.title?.title || found?.title || '简历').trim() || '简历'
+    const safeName = sanitizeFileName(title)
+
+    const json = resumeImportExport.exportToJson(data as ResumeData)
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
+    saveAs(blob, `${safeName}.json`)
+    return true
+  }
+
   return {
     resume,
     mode,
@@ -324,5 +325,8 @@ export const useResumeStore = () => {
     saveDraft,
     loadDraft,
     clearDraft,
+
+    importResumeFromJsonFile,
+    exportResumeRecordToJsonFile,
   }
 }

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Plus, Upload, View } from '@element-plus/icons-vue'
+import { Plus, View } from '@element-plus/icons-vue'
 import Head from '@/components/layout/head/index.vue'
 import Content from '@/components/layout/content/index.vue'
 import { useRouter } from 'vue-router'
 import { useResumeStore } from '@/stores/resume'
+import ImportJsonButton from '@/components/common/importJsonButton/index.vue'
 
 const router = useRouter()
 const store = useResumeStore()
@@ -13,6 +14,11 @@ const hasSaved = computed(() => store.hasSaved.value)
 
 const createResume = () => {
   store.createNew()
+  router.push('/editor')
+}
+
+const beforeImport = async (file: File) => {
+  await store.importResumeFromJsonFile(file)
   router.push('/editor')
 }
 </script>
@@ -24,7 +30,9 @@ const createResume = () => {
 
       <div v-if="hasSaved" class="page-actions">
         <el-button type="primary" :icon="Plus" @click="createResume">创建简历</el-button>
-        <el-button :icon="Upload" plain>导入</el-button>
+
+        <ImportJsonButton :before-import="beforeImport" />
+
         <el-button :icon="View" plain>示例</el-button>
       </div>
     </div>

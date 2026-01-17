@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { Plus, Upload, View } from '@element-plus/icons-vue'
+import { Plus, View } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import resumeIcon from '@/assets/resume.svg'
 import { useResumeStore } from '@/stores/resume'
 import ResumeCardList from './resumeCardList.vue'
+import ImportJsonButton from '@/components/common/importJsonButton/index.vue'
 
 const router = useRouter()
 const store = useResumeStore()
 
 const createResume = () => {
   store.createNew()
+  router.push('/editor')
+}
+
+const beforeImport = async (file: File) => {
+  await store.importResumeFromJsonFile(file)
   router.push('/editor')
 }
 
@@ -30,10 +36,10 @@ const primaryHoverColor = computed(() => '#0a91d9')
       <p>点击“创建简历”开始，或从 JSON 文件导入</p>
 
       <div class="button-group">
-        <el-button type="primary" :icon="Plus" size="large" @click="createResume"
-          >创建简历</el-button
-        >
-        <el-button :icon="Upload" size="large" plain>导入</el-button>
+        <el-button type="primary" :icon="Plus" size="large" @click="createResume">创建简历</el-button>
+
+        <ImportJsonButton size="large" :before-import="beforeImport" />
+
         <el-button :icon="View" size="large" plain>示例</el-button>
       </div>
     </div>

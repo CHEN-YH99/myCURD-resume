@@ -1,39 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, EditPen } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { EditPen } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useResumeStore } from '@/stores/resume'
+import { formatTime } from '@/utils/format'
+import ExportJsonButton from '@/components/common/exportJsonButton/index.vue'
+import ConfirmDeleteButton from '@/components/common/confirmDeleteButton/index.vue'
 
 const router = useRouter()
 const store = useResumeStore()
 
 const items = computed(() => store.resumeSummaries.value)
 
-const formatTime = (t: number) => {
-  try {
-    return new Date(t).toLocaleString()
-  } catch {
-    return ''
-  }
-}
 
 const onEdit = (id: string) => {
   store.loadById(id)
   router.push('/editor')
 }
 
-const onDelete = async (id: string) => {
-  try {
-    await ElMessageBox.confirm('确认删除该简历？此操作不可恢复。', '提示', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
-    return
-  }
+const onExport = async (id: string) => {
+  return store.exportResumeRecordToJsonFile(id)
+}
 
+const onDelete = async (id: string) => {
   const ok = store.removeById(id)
   if (ok) ElMessage.success('已删除')
 }
@@ -54,7 +44,8 @@ const onDelete = async (id: string) => {
           <template #footer>
             <div class="card-actions">
               <el-button size="small" :icon="EditPen" type="primary" @click="onEdit(it.id)">编辑</el-button>
-              <el-button size="small" :icon="Delete" type="danger" plain @click="onDelete(it.id)">删除</el-button>
+              <ExportJsonButton size="small" :export-json="() => onExport(it.id)" />
+              <ConfirmDeleteButton size="small" confirm-message="确认删除该简历？此操作不可恢复。" :on-confirm="() => onDelete(it.id)" />
             </div>
           </template>
         </el-card>

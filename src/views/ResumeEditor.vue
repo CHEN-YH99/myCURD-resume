@@ -26,8 +26,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useResumeStore } from '@/stores/resume'
 import defaultAvatar from '@/assets/defaultavatar.svg'
-
-const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
+import { uid, sanitizeFileName } from '@/utils/format'
 
 const router = useRouter()
 const store = useResumeStore()
@@ -408,7 +407,7 @@ const onSave = () => {
 
 const buildExportFileName = () => {
   const t = String(resume.value?.title?.title || '简历')
-  const safe = t.replace(/[\\/:*?"<>|]/g, '_').trim() || '简历'
+  const safe = sanitizeFileName(t)
   const d = new Date()
   const yyyy = String(d.getFullYear())
   const mm = String(d.getMonth() + 1).padStart(2, '0')
