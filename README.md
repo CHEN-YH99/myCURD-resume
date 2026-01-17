@@ -4,7 +4,7 @@
 
 ## 在线预览
 
-- **在线预览地址**：`TODO：请填写你的线上地址（例如 GitHub Pages / Vercel / Netlify）`
+- **在线预览地址**：`https://resume.xhui886.online/`
 
 ## 项目截图
 
