@@ -4,17 +4,21 @@ import { ElMessage } from 'element-plus'
 import { EditPen } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { useResumeStore } from '@/stores/resume'
+import { useEditorNavStore } from '@/stores/editorNav'
 import { formatTime } from '@/utils/format'
 import ExportJsonButton from '@/components/common/exportJsonButton/index.vue'
 import ConfirmDeleteButton from '@/components/common/confirmDeleteButton/index.vue'
 
 const router = useRouter()
 const store = useResumeStore()
+const navStore = useEditorNavStore()
 
 const items = computed(() => store.resumeSummaries.value)
 
 
 const onEdit = (id: string) => {
+  // 从已保存简历列表进入编辑：不弹“恢复草稿”提示，直接加载该简历
+  navStore.suppressDraftRecoverPromptOnce.value = true
   store.loadById(id)
   router.push('/editor')
 }
