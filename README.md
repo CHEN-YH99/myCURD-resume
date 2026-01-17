@@ -8,18 +8,37 @@
 
 ## 项目截图
 
-> 建议把截图放到仓库的 `docs/images/` 或 `public/` 目录下，然后在这里引用。
->
-> 示例（替换为你的实际图片路径）：
->
-> ![首页](docs/images/index1.png)
-> ![编辑/预览](docs/images/edit.png)
-> ![仅预览](docs/images/preview.png)
-> ![仅编辑](docs/images/editview.png)
-> ![简历列表](docs/images/cardlist.png)
-> ![基本信息模块](docs/images/sectioncard1.png)
-> ![个人信息模块](docs/images/sectioncard2.png)
-> ![个人经历模块](docs/images/sectioncard3.png)
+### 首页
+
+![首页](docs/images/index1.png)
+
+### 编辑/预览
+
+![编辑/预览](docs/images/edit.png)
+
+### 仅预览
+
+![仅预览](docs/images/preview.png)
+
+### 仅编辑
+
+![仅编辑](docs/images/editview.png)
+
+### 简历列表
+
+![简历列表](docs/images/cardlist.png)
+
+### 基本信息模块
+
+![基本信息模块](docs/images/sectioncard1.png)
+
+### 个人信息模块
+
+![个人信息模块](docs/images/sectioncard2.png)
+
+### 个人经历模块
+
+![个人经历模块](docs/images/sectioncard3.png)
 
 ## 功能特性
 
