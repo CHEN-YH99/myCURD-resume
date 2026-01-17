@@ -27,4 +27,4 @@ dist-ssr
 .cursor/rules/
 
 # Docs images (screenshots)
-docs/images/
+# docs/images/
