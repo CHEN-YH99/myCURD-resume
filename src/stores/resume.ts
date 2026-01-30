@@ -6,6 +6,13 @@ import { resumeImportExport } from '@/services/resumeImportExport'
 import { saveAs } from 'file-saver'
 import { uid, sanitizeFileName } from '@/utils/format'
 
+// 简历编辑相关的全局 Store：
+// - 管理当前编辑中的简历数据（state.resume）与 UI 模式（state.mode）
+// - 管理本地已保存的简历列表（state.records）与当前选中的简历 ID（state.currentId）
+// - 提供“保存/加载/删除/草稿/导入导出”等动作，供组件调用
+
+// 创建一份“新建简历”的默认数据。
+// 注意：其中部分模块 item 的 id 会通过 uid() 动态生成。
 const createDefaultResume = (): ResumeData => ({
   title: {
     title: '简历标题',
@@ -146,29 +153,42 @@ const createDefaultResume = (): ResumeData => ({
   }
 })
 
+// 对底层 localStorage 访问做一层薄封装：
+// 便于未来替换存储实现/在此处统一做异常兜底。
 const safeParseRecords = (): ResumeRecord[] => resumeStorage.readRecords()
 
+// 写入“已保存的简历记录列表”。该写入是覆盖式的（整表写回）。
 const safeWriteRecords = (records: ResumeRecord[]) => {
   resumeStorage.writeRecords(records)
 }
 
+// 读取草稿；不存在或结构非法时返回 null。
 const safeReadDraft = (): DraftPayload | null => resumeStorage.readDraft()
 
+// 写入草稿；用于自动保存/恢复。
 const safeWriteDraft = (payload: DraftPayload) => {
   resumeStorage.writeDraft(payload)
 }
 
+// 清除草稿存储。
 const clearDraftStorage = () => {
   resumeStorage.clearDraft()
 }
 
+// 全局响应式状态（模块级单例）：
+// - resume：当前编辑中的简历数据
+// - mode：编辑/预览/左右分栏
+// - currentId：当前简历 ID（未保存时为空字符串）
+// - records：本地已保存的简历列表（从 localStorage 初始化）
 const state = reactive({
   resume: createDefaultResume(),
   mode: 'both' as 'edit' | 'preview' | 'both',
   currentId: '' as string,
-  records: safeParseRecords() as ResumeRecord[],
+  records: safeParseRecords() as ResumeRecord[],  // 初始化时从 localStorage 读取简历列表
 })
 
+// 对外暴露的 Store 组合式函数。
+// 通过 computed 暴露只读视图，并提供一组 actions 供组件调用。
 export const useResumeStore = () => {
   const resume = computed(() => state.resume)
   const mode = computed({

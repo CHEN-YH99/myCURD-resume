@@ -3,4 +3,9 @@ declare module '*.svg' {
   export default src
 }
 
+declare module '*.gif' {
+  const src: string
+  export default src
+}
+
 declare module '@element-plus/icons-vue'
