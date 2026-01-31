@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Plus, View } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import Head from '@/components/layout/head/index.vue'
 import Content from '@/components/layout/content/index.vue'
 import { useRouter } from 'vue-router'
 import { useResumeStore } from '@/stores/resume'
 import ImportJsonButton from '@/components/common/importJsonButton/index.vue'
+import { debounce } from '@/utils/debounce'
 
 const router = useRouter()
 const store = useResumeStore()
@@ -21,11 +23,19 @@ const beforeImport = async (file: File) => {
   await store.importResumeFromJsonFile(file)
   router.push('/editor')
 }
+
+const showExample = debounce(() => {
+  ElMessage({
+    message: '开发中',
+    type: 'info'
+  })
+}, 300)
 </script>
 
 <template>
   <div class="page">
     <div class="page-head">
+
       <Head />
 
       <div v-if="hasSaved" class="page-actions">
@@ -33,7 +43,7 @@ const beforeImport = async (file: File) => {
 
         <ImportJsonButton :before-import="beforeImport" />
 
-        <el-button :icon="View" plain>示例</el-button>
+        <el-button :icon="View" plain @click="showExample">示例</el-button>
       </div>
     </div>
 

@@ -2,10 +2,12 @@
 import { Plus, View } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import resumeIcon from '@/assets/resume.svg'
 import { useResumeStore } from '@/stores/resume'
 import ResumeCardList from './resumeCardList.vue'
 import ImportJsonButton from '@/components/common/importJsonButton/index.vue'
+import { debounce } from '@/utils/debounce'
 
 const router = useRouter()
 const store = useResumeStore()
@@ -19,6 +21,13 @@ const beforeImport = async (file: File) => {
   await store.importResumeFromJsonFile(file)
   router.push('/editor')
 }
+
+const showExample = debounce(() => {
+  ElMessage({
+    message: '开发中',
+    type: 'info'
+  })
+}, 300)
 
 const primaryHoverColor = computed(() => '#0a91d9')
 </script>
@@ -40,7 +49,7 @@ const primaryHoverColor = computed(() => '#0a91d9')
 
         <ImportJsonButton size="large" :before-import="beforeImport" />
 
-        <el-button :icon="View" size="large" plain>示例</el-button>
+        <el-button :icon="View" size="large" plain @click="showExample">示例</el-button>
       </div>
     </div>
   </div>
@@ -54,9 +63,11 @@ $gradient-end: #f2f6fc;
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-8px);
   }
+
   100% {
     transform: translateY(0px);
   }
