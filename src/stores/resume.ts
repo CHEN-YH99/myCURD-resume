@@ -1,3 +1,10 @@
+/**
+ * 简历状态管理模块
+ * @description 管理简历编辑、保存、加载、草稿等全局状态和操作
+ * @author Resume Editor Team
+ * @date 2024-01-31
+ */
+
 import { computed, reactive } from 'vue'
 import type { ResumeData } from '@/types/resume'
 import defaultAvatar from '@/assets/defaultavatar.svg'
@@ -6,13 +13,11 @@ import { resumeImportExport } from '@/services/resumeImportExport'
 import { saveAs } from 'file-saver'
 import { uid, sanitizeFileName } from '@/utils/format'
 
-// 简历编辑相关的全局 Store：
-// - 管理当前编辑中的简历数据（state.resume）与 UI 模式（state.mode）
-// - 管理本地已保存的简历列表（state.records）与当前选中的简历 ID（state.currentId）
-// - 提供“保存/加载/删除/草稿/导入导出”等动作，供组件调用
-
-// 创建一份“新建简历”的默认数据。
-// 注意：其中部分模块 item 的 id 会通过 uid() 动态生成。
+/**
+ * 创建默认简历数据
+ * @returns 包含默认值的简历数据对象
+ * @description 创建一份"新建简历"的默认数据，其中部分模块 item 的 id 会通过 uid() 动态生成
+ */
 const createDefaultResume = (): ResumeData => ({
   title: {
     title: '简历标题',
@@ -153,44 +158,69 @@ const createDefaultResume = (): ResumeData => ({
   }
 })
 
-// 对底层 localStorage 访问做一层薄封装：
-// 便于未来替换存储实现/在此处统一做异常兜底。
+/**
+ * 安全读取简历记录列表
+ * @returns 简历记录数组
+ * @description 对底层 localStorage 访问做一层薄封装，便于未来替换存储实现
+ */
 const safeParseRecords = (): ResumeRecord[] => resumeStorage.readRecords()
 
-// 写入“已保存的简历记录列表”。该写入是覆盖式的（整表写回）。
+/**
+ * 安全写入简历记录列表
+ * @param records - 简历记录数组
+ * @description 覆盖式写入整个简历记录表
+ */
 const safeWriteRecords = (records: ResumeRecord[]) => {
   resumeStorage.writeRecords(records)
 }
 
-// 读取草稿；不存在或结构非法时返回 null。
+/**
+ * 安全读取草稿数据
+ * @returns 草稿数据对象，不存在或结构非法时返回 null
+ */
 const safeReadDraft = (): DraftPayload | null => resumeStorage.readDraft()
 
-// 写入草稿；用于自动保存/恢复。
+/**
+ * 安全写入草稿数据
+ * @param payload - 草稿数据对象
+ * @description 用于自动保存/恢复
+ */
 const safeWriteDraft = (payload: DraftPayload) => {
   resumeStorage.writeDraft(payload)
 }
 
-// 清除草稿存储。
+/**
+ * 清除草稿存储
+ */
 const clearDraftStorage = () => {
   resumeStorage.clearDraft()
 }
 
-// 全局响应式状态（模块级单例）：
-// - resume：当前编辑中的简历数据
-// - mode：编辑/预览/左右分栏
-// - currentId：当前简历 ID（未保存时为空字符串）
-// - records：本地已保存的简历列表（从 localStorage 初始化）
+/**
+ * 全局响应式状态（模块级单例）
+ * @description 管理当前编辑中的简历数据、UI 模式、当前简历 ID 和本地已保存的简历列表
+ */
 const state = reactive({
+  /** 当前编辑中的简历数据 */
   resume: createDefaultResume(),
+  /** 编辑/预览/左右分栏模式 */
   mode: 'both' as 'edit' | 'preview' | 'both',
+  /** 当前简历 ID（未保存时为空字符串） */
   currentId: '' as string,
-  records: safeParseRecords() as ResumeRecord[],  // 初始化时从 localStorage 读取简历列表
+  /** 本地已保存的简历列表（从 localStorage 初始化） */
+  records: safeParseRecords() as ResumeRecord[],
 })
 
-// 对外暴露的 Store 组合式函数。
-// 通过 computed 暴露只读视图，并提供一组 actions 供组件调用。
+/**
+ * 简历状态管理组合式函数
+ * @returns 简历相关的状态和操作方法
+ * @description 对外暴露的 Store 组合式函数，通过 computed 暴露只读视图，并提供一组 actions 供组件调用
+ */
 export const useResumeStore = () => {
+  /** 当前简历数据（只读） */
   const resume = computed(() => state.resume)
+  
+  /** 编辑模式（可读写） */
   const mode = computed({
     get: () => state.mode,
     set: (v: 'edit' | 'preview' | 'both') => {
@@ -198,6 +228,10 @@ export const useResumeStore = () => {
     },
   })
 
+  /**
+   * 简历摘要列表（只读）
+   * @description 按更新时间倒序排列
+   */
   const resumeSummaries = computed<ResumeSummary[]>(() =>
     state.records
       .slice()
@@ -205,13 +239,23 @@ export const useResumeStore = () => {
       .map((r) => ({ id: r.id, title: r.title, updatedAt: r.updatedAt }))
   )
 
+  /** 是否有已保存的简历 */
   const hasSaved = computed(() => resumeSummaries.value.length > 0)
 
+  /**
+   * 创建新简历
+   * @description 清空当前 ID 并重置为默认简历数据
+   */
   const createNew = () => {
     state.currentId = ''
     state.resume = createDefaultResume()
   }
 
+  /**
+   * 保存当前简历
+   * @returns 返回保存后的简历 ID 和标题
+   * @description 如果当前 ID 为空则创建新记录，否则更新现有记录
+   */
   const saveCurrent = () => {
     const now = Date.now()
     const id = state.currentId || uid()
@@ -234,6 +278,11 @@ export const useResumeStore = () => {
     return { id, title }
   }
 
+  /**
+   * 根据 ID 加载简历
+   * @param id - 简历 ID
+   * @returns 加载成功返回 true，失败返回 false
+   */
   const loadById = (id: string) => {
     const found = state.records.find((r) => r.id === id)
     if (!found) return false
@@ -242,6 +291,12 @@ export const useResumeStore = () => {
     return true
   }
 
+  /**
+   * 根据 ID 删除简历
+   * @param id - 简历 ID
+   * @returns 删除成功返回 true，失败返回 false
+   * @description 如果删除的是当前编辑的简历，则重置为新建状态
+   */
   const removeById = (id: string) => {
     const idx = state.records.findIndex((r) => r.id === id)
     if (idx < 0) return false
@@ -256,10 +311,18 @@ export const useResumeStore = () => {
     return true
   }
 
+  /**
+   * 重置简历数据
+   * @description 等同于创建新简历
+   */
   const reset = () => {
     createNew()
   }
 
+  /**
+   * 保存草稿
+   * @returns 返回草稿数据对象
+   */
   const saveDraft = () => {
     const payload: DraftPayload = {
       updatedAt: Date.now(),
@@ -270,6 +333,10 @@ export const useResumeStore = () => {
     return payload
   }
 
+  /**
+   * 加载草稿
+   * @returns 加载成功返回 true，失败返回 false
+   */
   const loadDraft = () => {
     const d = safeReadDraft()
     if (!d) return false
@@ -278,18 +345,29 @@ export const useResumeStore = () => {
     return true
   }
 
+  /** 是否存在草稿 */
   const hasDraft = computed(() => !!safeReadDraft())
 
+  /**
+   * 清除草稿
+   */
   const clearDraft = () => {
     clearDraftStorage()
   }
 
+  /** 草稿元信息 */
   const getDraftMeta = computed(() => {
     const d = safeReadDraft()
     if (!d) return null
     return { updatedAt: d.updatedAt, currentId: d.currentId }
   })
 
+  /**
+   * 从 JSON 文件导入简历
+   * @param file - JSON 文件对象
+   * @returns 返回导入后的简历 ID 和标题
+   * @throws 当文件解析失败时抛出异常
+   */
   const importResumeFromJsonFile = async (file: File) => {
     const { resume: imported } = await resumeImportExport.importFromJsonFile(file, createDefaultResume)
 
@@ -313,6 +391,11 @@ export const useResumeStore = () => {
     return { id, title }
   }
 
+  /**
+   * 导出简历记录为 JSON 文件
+   * @param id - 简历 ID（可选，默认使用当前简历）
+   * @returns 导出成功返回 true，失败返回 false
+   */
   const exportResumeRecordToJsonFile = (id?: string) => {
     const targetId = id || state.currentId
     if (!targetId) return false
